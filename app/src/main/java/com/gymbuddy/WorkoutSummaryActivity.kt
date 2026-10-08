@@ -8,6 +8,8 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.res.ResourcesCompat
 import com.gymbuddy.databinding.ActivityWorkoutSummaryBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlin.concurrent.thread
 
 class WorkoutSummaryActivity : AppCompatActivity(), DurationEditorDialogFragment.DurationEditorListener {
@@ -126,20 +128,48 @@ class WorkoutSummaryActivity : AppCompatActivity(), DurationEditorDialogFragment
 
     private fun pushToWorker() {
         val summary = summaryData ?: return
+        val alsoRoutine = WorkoutPushClient.alsoPushRoutine(this)
         binding.pushButton.isEnabled = false
         binding.pushButton.setText(R.string.summary_pushing)
         thread {
             val result = WorkoutPushClient.push(this, summary)
+            val routineError = if (result.isSuccess && alsoRoutine) {
+                pushRoutine().exceptionOrNull()?.message
+            } else {
+                null
+            }
             runOnUiThread {
                 if (isFinishing) return@runOnUiThread
-                if (result.isSuccess) {
+                if (result.isSuccess && routineError == null) {
                     closeToAboutLog()
                 } else {
                     binding.pushButton.isEnabled = true
                     binding.pushButton.setText(R.string.summary_push)
-                    Toast.makeText(this, R.string.summary_push_failed, Toast.LENGTH_SHORT).show()
+                    val message = if (result.isSuccess) {
+                        routineError ?: getString(R.string.summary_push_routine_failed)
+                    } else {
+                        getString(R.string.summary_push_failed)
+                    }
+                    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
                 }
             }
+        }
+    }
+
+    private fun pushRoutine(): Result<Unit> {
+        return try {
+            val saved = runBlocking(Dispatchers.IO) {
+                val days = RoutineExport.fromEntities(
+                    AppDatabase.getDatabase(this@WorkoutSummaryActivity).routineDao().getAll()
+                )
+                RoutineCloudClient.save(this@WorkoutSummaryActivity, days)
+            }
+            saved.onSuccess { record ->
+                WorkerRemote.markStandardAccepted(this, record.name, record.updatedAt)
+            }
+            saved.map { }
+        } catch (error: Exception) {
+            Result.failure(error)
         }
     }
 

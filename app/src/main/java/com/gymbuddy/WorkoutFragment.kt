@@ -127,12 +127,30 @@ class WorkoutFragment : Fragment() {
             openEndSummary()
             return
         }
-        AlertDialog.Builder(requireContext())
+        val builder = AlertDialog.Builder(requireContext())
             .setTitle(R.string.end_workout_title)
             .setMessage(R.string.end_workout_message)
-            .setPositiveButton(R.string.end_workout) { _, _ -> openEndSummary() }
             .setNegativeButton(android.R.string.cancel, null)
-            .show()
+        val pushRoutine = if (WorkerRemote.isConfigured(requireContext())) {
+            android.widget.CheckBox(requireContext()).apply {
+                text = getString(R.string.end_workout_push_routine)
+                isChecked = WorkoutPushClient.alsoPushRoutine(requireContext())
+                val pad = (24 * resources.displayMetrics.density).toInt()
+                setPadding(pad, pad / 3, pad, 0)
+            }
+        } else {
+            null
+        }
+        if (pushRoutine != null) {
+            builder.setView(pushRoutine)
+        }
+        builder.setPositiveButton(R.string.end_workout) { _, _ ->
+            if (pushRoutine != null) {
+                WorkoutPushClient.setAlsoPushRoutine(requireContext(), pushRoutine.isChecked)
+            }
+            openEndSummary()
+        }
+        builder.show()
     }
 
     private fun openEndSummary() {

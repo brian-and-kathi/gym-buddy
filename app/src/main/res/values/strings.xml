@@ -29,6 +29,8 @@
     <string name="end_workout">End workout</string>
     <string name="end_workout_title">End workout?</string>
     <string name="end_workout_message">Sets you have not finished stay unfinished. The next screen is where you can push this session.</string>
+    <string name="end_workout_push_routine">Also push routine</string>
+    <string name="summary_push_routine_failed">Gym time was pushed, but the routine was not</string>
     <string name="scan_profile">Scan profile QR</string>
     <string name="scan_profile_invalid">That QR is not a Gym Buddy profile</string>
     <string name="scan_camera_denied">Camera permission is needed to scan a profile QR</string>

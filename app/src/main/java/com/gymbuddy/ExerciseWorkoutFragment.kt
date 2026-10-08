@@ -518,6 +518,7 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
 
         binding.progressPieChart.setProgress(exercise.completedSets, exercise.sets)
         binding.progressPieChart.setSegmented(true)
+        binding.progressPieChart.setSegmentDividers(true)
     }
 
     override fun onWeightUpdated(newWeight: Int) {

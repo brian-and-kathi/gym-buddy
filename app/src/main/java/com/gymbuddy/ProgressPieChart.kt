@@ -26,6 +26,7 @@ class ProgressPieChart @JvmOverloads constructor(
     private var completed = 0
     private var total = 1
     private var isSegmented = false
+    private var showSegmentDividers = false
     private var isHighlighted = false
     private var isOutlineEnabled = true
     private var isAnimating = false
@@ -50,6 +51,11 @@ class ProgressPieChart @JvmOverloads constructor(
 
     fun setSegmented(segmented: Boolean) {
         isSegmented = segmented
+        invalidate()
+    }
+
+    fun setSegmentDividers(enabled: Boolean) {
+        showSegmentDividers = enabled
         invalidate()
     }
 
@@ -198,7 +204,8 @@ class ProgressPieChart @JvmOverloads constructor(
             totalSets = total,
             segmented = isSegmented,
             outlineEnabled = isOutlineEnabled,
-            outlineStroke = paint.strokeWidth
+            outlineStroke = paint.strokeWidth,
+            segmentDividers = showSegmentDividers
         )
     }
 }

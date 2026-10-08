@@ -6,7 +6,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/item_border"
+        android:background="@drawable/exercise_card_background"
+        android:foreground="@drawable/exercise_card_border"
         android:padding="0dp"
         android:clipChildren="true"
         android:clipToOutline="true">
@@ -16,7 +17,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.5" />
+            app:layout_constraintGuide_percent="0.38" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/titleContainer"
@@ -176,101 +177,94 @@
             app:layout_constraintTop_toBottomOf="@+id/cooldownLabel"
             tools:text=":59" />
 
-        <TextView
-            android:id="@+id/difficultyLabel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="Difficulty"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#ffffff"
-            android:gravity="center"
-            android:layout_marginTop="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/verticalGuideline"
-            app:layout_constraintTop_toBottomOf="@+id/titleContainer"
-            app:layout_constraintBottom_toTopOf="@+id/starRatingContainer" />
-
         <LinearLayout
-            android:id="@+id/starRatingContainer"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginTop="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/verticalGuideline"
-            app:layout_constraintTop_toBottomOf="@+id/difficultyLabel"
-            app:layout_constraintBottom_toTopOf="@+id/progressPieChart">
-
-            <TextView
-                android:id="@+id/starEasy"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text=" "
-                android:textSize="32sp"
-                android:gravity="center"
-                android:background="?android:attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true" />
-
-            <TextView
-                android:id="@+id/starGood"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text=" "
-                android:textSize="32sp"
-                android:gravity="center"
-                android:background="?android:attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true" />
-
-            <TextView
-                android:id="@+id/starHard"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:text=" "
-                android:textSize="32sp"
-                android:gravity="center"
-                android:background="?android:attr/selectableItemBackground"
-                android:clickable="true"
-                android:focusable="true" />
-
-        </LinearLayout>
-
-        <com.gymbuddy.ProgressPieChart
-            android:id="@+id/progressPieChart"
+            android:id="@+id/rightColumn"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginEnd="16dp"
-            android:gravity="top"
-            app:layout_constraintWidth_percent="0.4"
-            app:layout_constraintStart_toStartOf="@+id/verticalGuideline"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toTopOf="@+id/notesText"
-            app:layout_constraintTop_toBottomOf="@+id/starRatingContainer" />
-
-        <TextView
-            android:id="@+id/notesText"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="18sp"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="16dp"
-            android:gravity="top|start"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@+id/verticalGuideline"
-            app:layout_constraintTop_toBottomOf="@+id/progressPieChart"
-            app:layout_constraintBottom_toBottomOf="parent"
-            tools:text="Notes: Keep elbows in" />
+            app:layout_constraintTop_toBottomOf="@+id/titleContainer">
+
+            <TextView
+                android:id="@+id/difficultyLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Difficulty"
+                android:textAlignment="center"
+                android:textColor="#ffffff"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/starRatingContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/starEasy"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text=" "
+                    android:textSize="32sp" />
+
+                <TextView
+                    android:id="@+id/starGood"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text=" "
+                    android:textSize="32sp" />
+
+                <TextView
+                    android:id="@+id/starHard"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:text=" "
+                    android:textSize="32sp" />
+
+            </LinearLayout>
+
+            <com.gymbuddy.ProgressPieChart
+                android:id="@+id/progressPieChart"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_marginTop="8dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/notesText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_horizontal"
+                android:textAlignment="center"
+                android:textSize="18sp"
+                tools:text="Notes: Keep elbows in" />
+
+        </LinearLayout>
 
         <TextView
             android:id="@+id/fullScreenNotesText"
