@@ -28,3 +28,10 @@ export function revisionMark(): string {
   if (!hash) return "";
   return `<style>.rev{position:fixed;top:8px;right:12px;z-index:30;font:11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#666;letter-spacing:.03em}header.top{padding-right:78px}body.app-embed .rev{display:none}</style><span class="rev">${escapeHtml(hash)}</span>`;
 }
+
+/** Hash rendered inline (e.g. in the header under the profile name). */
+export function revisionInline(): string {
+  const hash = gitRevision();
+  if (!hash) return "";
+  return `<code class="rev-inline">${escapeHtml(hash)}</code>`;
+}

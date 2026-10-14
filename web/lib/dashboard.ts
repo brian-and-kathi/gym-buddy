@@ -1,6 +1,6 @@
 import { escapeHtml } from "./http";
 import { renderRoutineEditor } from "./routine-editor";
-import { revisionMark } from "./revision";
+import { revisionInline } from "./revision";
 
 export type IndexEntry = {
   date: string;
@@ -52,7 +52,9 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     .word { font-size: 26px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
     .word .gym { color: #f9f72e; }
     .word .buddy { color: #00ff00; }
-    .who { color: #00ffff; font-weight: 600; font-size: 16px; }
+    .who { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; text-align: right; }
+    .who b { color: #00ffff; font-weight: 600; font-size: 16px; }
+    .who .rev-inline { font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; color: #6e6e76; letter-spacing: .03em; }
     .shell { display: flex; align-items: flex-start; min-height: calc(100vh - 59px); }
     .side { position: sticky; top: 59px; width: 240px; flex: none; align-self: stretch; display: flex; flex-direction: column; gap: 6px; padding: 16px 12px; background: #1a1a1a; border-right: 1px solid #333; }
     .side > button { text-align: left; background: transparent; color: #ddd; border: 0; border-left: 3px solid transparent; border-radius: 8px; padding: 10px 12px; cursor: pointer; font: inherit; font-size: 16px; }
@@ -64,7 +66,11 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
       .shell { flex-direction: column; }
       .side { position: sticky; top: 56px; width: auto; flex-direction: row; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid #333; padding: 8px; z-index: 5; }
       .side > button { flex: 1; text-align: center; border-left: 0; border-bottom: 3px solid transparent; }
-      .side > button.active { border-bottom-color: #f9f72e; border-left-color: transparent; }
+      .side > button.active { background: transparent; color: #ececec; font-weight: 600; border-bottom: 2px solid #e9cf4f; border-left-color: transparent; border-radius: 0; }
+      main { padding: 10px 12px 40px; }
+      .top { padding: 10px 14px; }
+      .side { padding: 0; gap: 0; background: #121212; border-bottom: 1px solid #2c2c30; }
+      .side > button { color: #9a9aa2; border-radius: 0; padding: 12px 0; border-bottom: 2px solid transparent; }
     }
     body.app-embed .top, body.app-embed .agent, body.app-embed [data-tab="routines"] { display: none; }
     body.app-embed .shell { flex-direction: column; min-height: 0; }
@@ -105,22 +111,25 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     .detail { margin-top: 16px; min-height: 1.5em; color: #ddd; }
     [data-panel] { display: none; }
     [data-panel].active { display: block; }
-    .agent { display: flex; flex-direction: column; align-items: stretch; gap: 8px; margin-top: 18px; }
-    .side .agent input { min-width: 0; width: 100%; }
-    .agent label { color: #bdbdbd; font-size: 13px; }
-    .agent input { flex: 1; min-width: 200px; background: #121212; color: #eee; border: 1px solid #555; border-radius: 8px; padding: 8px 10px; font: inherit; font-size: 13px; }
-    .agent button { background: #2a2a2a; color: #f9f72e; border: 1px solid #555; border-radius: 10px; padding: 8px 12px; cursor: pointer; font: inherit; }
-    .agent .hint { flex-basis: 100%; margin: 0; color: #9e9e9e; font-size: 13px; }
+    details.agent { margin-top: 20px; border-top: 1px solid #2c2c30; border-bottom: 1px solid #2c2c30; color: #9a9aa2; }
+    details.agent summary { list-style: none; cursor: pointer; padding: 12px 2px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+    details.agent summary::-webkit-details-marker { display: none; }
+    details.agent summary::before { content: "›"; display: inline-block; width: 10px; font-size: 15px; transition: transform .15s; }
+    details.agent[open] summary::before { transform: rotate(90deg); }
+    .agent-body { padding: 2px 2px 12px 20px; }
+    .agent-field { display: flex; gap: 6px; }
+    .agent input { flex: 1; min-width: 0; background: #141416; color: #9a9aa2; border: 1px solid #2c2c30; border-radius: 8px; padding: 9px; font: 12px ui-monospace, monospace; }
+    .agent button { background: none; color: #e9cf4f; border: 1px solid #e9cf4f; border-radius: 8px; padding: 0 14px; cursor: pointer; font: inherit; font-weight: 600; }
+    .agent .hint { margin: 6px 0 0; color: #6e6e76; font-size: 12px; }
   </style>
 </head>
 <body class="${bodyClass}"${options.lockTab ? ` data-lock="${options.lockTab}"` : ""}>
-  ${revisionMark()}
   <header class="top">
     <a class="brand" href="/">
       <svg class="plate" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14" fill="#5B2C6F" stroke="#f9f72e" stroke-width="2"/><circle cx="16" cy="16" r="5" fill="#121212"/></svg>
       <span class="word"><span class="gym">Gym</span> <span class="buddy">Buddy</span></span>
     </a>
-    <span class="who">${escapeHtml(options.displayName)}</span>
+    <span class="who"><b>${escapeHtml(options.displayName)}</b>${revisionInline()}</span>
   </header>
   <div class="shell">
   <aside class="side">
@@ -128,12 +137,6 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     <button type="button" data-tab="stats">Stats</button>
     <button type="button" class="share-tab" data-tab="share">Share</button>
     <button type="button" data-tab="routines">Routines</button>
-    <div class="agent">
-      <label for="agentLink">Agent link</label>
-      <input id="agentLink" readonly value="${escapeHtml(options.agentUrl)}" />
-      <button type="button" id="copyAgent">Copy</button>
-      <p class="hint">This link lets an agent see and edit this profile.</p>
-    </div>
   </aside>
   <main>
     <section data-panel="stats">
@@ -196,6 +199,16 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     <section data-panel="routines">
     ${routines}
     </section>
+    <details class="agent">
+      <summary>Agent access</summary>
+      <div class="agent-body">
+        <div class="agent-field">
+          <input id="agentLink" readonly aria-label="Agent link" value="${escapeHtml(options.agentUrl)}" />
+          <button type="button" id="copyAgent">Copy</button>
+        </div>
+        <p class="hint">This link lets an agent see and edit this profile.</p>
+      </div>
+    </details>
   </main>
   </div>
   <script>
@@ -309,6 +322,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
       document.querySelectorAll("[data-panel]").forEach(function (panel) {
         panel.classList.toggle("active", panel.getAttribute("data-panel") === name);
       });
+      window.dispatchEvent(new Event("resize"));
       if (store && !document.body.classList.contains("locked")) localStorage.setItem(tabKey, name);
       if (document.body.classList.contains("locked")) return;
       var next = new URL(location.href);

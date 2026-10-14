@@ -12,74 +12,86 @@ export function renderRoutineEditor(options: {
   const embedded = options.embedded === true;
   const body = `<div class="routine-root">
   <style>
-    .routine-root { color: #eee; }
+    .routine-root { --acc: #e9cf4f; --card: #1b1b1d; --line: #2c2c30; --text: #ececec; --mute: #9a9aa2; --dim: #6e6e76; --field: #141416; color: var(--text); }
+    .routine-root * { box-sizing: border-box; }
     .routine-root a { color: #00ffff; }
-    .routine-root h1 { color: #f9f72e; font-size: 28px; margin: 0; }
-    .layout { max-width: 900px; margin: 0 auto; padding: 0 0 48px; }
-    .routine-root .card { background: #1e1e1e; border: 1px solid #444; border-radius: 16px; padding: 14px; }
-    .versions { display: flex; flex-direction: column; gap: 8px; }
-    .versions button.new { background: #5B2C6F; color: #fff; border: 0; border-radius: 10px; padding: 10px; cursor: pointer; font-size: 14px; }
-    .ver { text-align: left; background: #2a2a2a; color: #eee; border: 1px solid #444; border-radius: 10px; padding: 10px; cursor: pointer; }
-    .ver.active { border-color: #f9f72e; background: #3a2a12; }
-    .ver .name { font-weight: 600; }
-    .ver .meta { color: #9e9e9e; font-size: 12px; margin-top: 4px; }
-    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 12px; }
+    .routine-root .layout { max-width: 720px; margin: 0 auto; padding: 0 0 24px; }
     .routine-root input, .routine-root select, .routine-root textarea, .routine-root button { font: inherit; }
-    .routine-root input[type=text], .routine-root input[type=number], .routine-root textarea, .routine-root select {
-      background: #121212; color: #eee; border: 1px solid #555; border-radius: 8px; padding: 8px 10px;
-    }
-    .name { flex: 1; min-width: 180px; }
-    .toolbar button, .ex-actions button, .modal-actions button {
-      background: #2a2a2a; color: #f9f72e; border: 1px solid #555; border-radius: 10px; padding: 8px 12px; cursor: pointer;
-    }
-    .toolbar button.primary { background: #5B2C6F; color: #fff; border-color: #7D3C98; }
-    .toolbar button.danger { color: #ff8a9a; }
-    .days { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 14px; }
-    .days button { background: #2a2a2a; color: #ddd; border: 1px solid #444; border-radius: 999px; padding: 6px 12px; cursor: pointer; }
-    .days button.active { background: #14331c; border-color: #00aa44; color: #e8ffe8; }
-    .rest { color: #9e9e9e; font-style: italic; margin: 8px 0 12px; }
-    .ex { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; grid-template-areas: "head head head" "nums notes actions"; gap: 8px 10px; border: 1px solid #333; border-radius: 12px; padding: 10px; margin-bottom: 10px; background: #191919; align-items: stretch; }
-    .ex-head { grid-area: head; display: flex; gap: 8px; align-items: center; }
-    .ex-head input[type=text] { flex: 1; min-width: 0; }
-    .ex-head select { width: 110px; }
-    .ex-nums { grid-area: nums; display: flex; flex-direction: column; gap: 6px; width: 112px; }
-    .ex-notes { grid-area: notes; display: flex; }
-    .ex-notes textarea { width: 100%; height: 100%; min-height: 108px; margin: 0; resize: vertical; }
-    .ex-actions { grid-area: actions; display: flex; flex-direction: column; gap: 6px; }
-    .ex-actions button { padding: 8px; min-width: 40px; }
-    .ex-actions button.trash { color: #ff8a9a; display: inline-flex; align-items: center; justify-content: center; }
-    .ex-actions svg { display: block; }
-    .field label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #bdbdbd; margin-bottom: 4px; }
-    .field.weight label, .field.weight input { color: #00FFFF; }
-    .field.reps label, .field.reps input { color: #F1C40F; }
-    .field.sets label, .field.sets input { color: #00FF00; }
-    textarea { width: 100%; min-height: 64px; margin-top: 8px; resize: vertical; }
-    .status { min-height: 1.4em; color: #9e9e9e; margin: 8px 0; }
-    .status.err { color: #ff8a9a; }
-    .status.ok { color: #00ff88; }
-    .gate { position: fixed; inset: 0; background: #121212ee; display: none; align-items: center; justify-content: center; padding: 24px; }
-    .gate.show { display: flex; }
-    .gate .box { width: min(420px, 100%); }
-    .hidden { display: none !important; }
-    .modal {
-      position: fixed; inset: 0; background: #000a; display: none; align-items: center; justify-content: center; padding: 16px;
-    }
-    .modal.show { display: flex; }
-    .modal .box { width: min(720px, 100%); max-height: 90vh; overflow: auto; }
-    .modal textarea { min-height: 420px; font-family: ui-monospace, monospace; font-size: 13px; }
+    .routine-root .bar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .routine-root .days { display: flex; gap: 4px; flex: 1; min-width: 0; }
+    .routine-root .days button { flex: 1; min-width: 0; background: none; border: 1px solid var(--line); color: var(--mute); border-radius: 8px; padding: 6px 0; font-size: 13px; line-height: 1.1; cursor: pointer; min-height: 44px; }
+    .routine-root .days button small { display: block; font-size: 10px; color: var(--dim); min-height: 11px; }
+    .routine-root .days button.active { border-color: var(--acc); color: var(--text); }
+    .routine-root .days button.active small { color: var(--acc); }
+    .routine-root .save { background: var(--acc); color: #1a1606; border: 0; border-radius: 8px; font-weight: 700; padding: 0 14px; min-height: 44px; cursor: pointer; }
+    .routine-root .status { min-height: 0; color: var(--mute); margin: 0 0 8px; font-size: 14px; }
+    .routine-root .status:empty { display: none; }
+    .routine-root .status.err { color: #ff8a9a; }
+    .routine-root .status.ok { color: #8fc5a0; }
+    .routine-root .rest { color: var(--mute); font-style: italic; margin: 8px 0 12px; }
+    .routine-root .ex { display: flex; background: var(--card); border: 1px solid var(--line); border-radius: 12px; margin-bottom: 8px; overflow: hidden; }
+    .routine-root .ex.dragging { opacity: .55; border-color: var(--acc); }
+    .routine-root .ex.drop-before { box-shadow: 0 -3px 0 var(--acc); }
+    .routine-root .ex.drop-after { box-shadow: 0 3px 0 var(--acc); }
+    .routine-root .rail { width: 40px; flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; border-right: 1px solid var(--line); }
+    .routine-root .rail button { background: none; border: 0; color: var(--mute); width: 40px; height: 40px; font-size: 15px; padding: 0; cursor: pointer; }
+    .routine-root .rail button:disabled { opacity: .3; cursor: default; }
+    .routine-root .rail .grip { font-size: 14px; letter-spacing: -2px; color: var(--dim); cursor: grab; touch-action: none; }
+    .routine-root .rail .del { margin-top: auto; color: #8a5a5f; font-size: 13px; }
+    .routine-root .ex-body { flex: 1; min-width: 0; padding: 8px 10px; }
+    .routine-root .h { display: flex; align-items: center; gap: 8px; }
+    .routine-root .h .n { flex: 1; min-width: 0; background: none; border: 1px solid transparent; border-radius: 6px; color: var(--text); font-weight: 600; font-size: 16px; padding: 4px 4px; margin-left: -5px; text-overflow: ellipsis; }
+    .routine-root .h .n:focus { outline: none; border-color: var(--line); background: var(--field); }
+    .routine-root .pill { appearance: none; -webkit-appearance: none; font-size: 11px; font-weight: 600; text-transform: lowercase; border-radius: 999px; padding: 3px 9px; border: 1px solid #3a3a40; color: var(--mute); background: transparent; cursor: pointer; }
+    .routine-root .pill option { background: #1b1b1d; color: var(--text); }
+    .routine-root .pill.hard { color: #e7a07a; border-color: #5a3a2c; }
+    .routine-root .pill.easy { color: #8fc5a0; border-color: #2f4a38; }
+    .routine-root .pillwrap { position: relative; flex: none; }
+    .routine-root .pillwrap .pill { padding-right: 20px; }
+    .routine-root .pillwrap::after { content: "▾"; position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 10px; color: var(--mute); pointer-events: none; }
+    .routine-root .nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 6px; }
+    .routine-root .num { position: relative; background: var(--field); border: 1px solid var(--line); border-radius: 9px; height: 46px; text-align: center; }
+    .routine-root .num label { position: absolute; top: 3px; left: 0; right: 0; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; opacity: .85; pointer-events: none; }
+    .routine-root .num .v { display: flex; align-items: center; justify-content: space-between; height: 100%; padding-top: 9px; }
+    .routine-root .num .v input { width: 100%; min-width: 0; flex: 1; background: none; border: 0; padding: 0; text-align: center; font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+    .routine-root .num .v input::-webkit-outer-spin-button, .routine-root .num .v input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .routine-root .num .v input:focus { outline: none; }
+    .routine-root .num:focus-within { border-color: #4a4a50; }
+    .routine-root .num .v button { flex: none; background: none; border: 0; color: var(--mute); width: 34px; height: 44px; margin-top: -9px; padding-top: 9px; font-size: 18px; cursor: pointer; }
+    .routine-root .num.weight label, .routine-root .num.weight input { color: #00FFFF; }
+    .routine-root .num.reps label, .routine-root .num.reps input { color: #F1C40F; }
+    .routine-root .num.sets label, .routine-root .num.sets input { color: #00FF00; }
+    .routine-root .notes { display: block; width: 100%; margin-top: 8px; background: var(--field); border: 1px solid #34343a; border-radius: 9px; padding: 9px 11px; color: var(--text); font-size: 1rem; line-height: 1.5; min-height: calc(4 * 1.5rem + 20px); field-sizing: content; resize: none; overflow: hidden; }
+    .routine-root .notes:focus { outline: none; border-color: var(--acc); }
+    .routine-root .add { width: 100%; background: none; border: 1px dashed #3a3a40; color: var(--mute); border-radius: 12px; padding: 11px; margin-top: 2px; cursor: pointer; }
+    .routine-root .foot { margin-top: 14px; border-top: 1px solid var(--line); }
+    .routine-root .row { display: flex; width: 100%; align-items: center; gap: 8px; padding: 12px 2px; color: var(--mute); font-size: 14px; background: none; border: 0; border-bottom: 1px solid var(--line); text-align: left; cursor: pointer; }
+    .routine-root .row .chev { display: inline-block; width: 10px; font-size: 15px; }
+    .routine-root .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px; }
+    .routine-root .gate input, .routine-root .modal textarea { background: var(--field); color: var(--text); border: 1px solid #34343a; border-radius: 8px; padding: 8px 10px; }
+    .routine-root .modal-actions button, .routine-root .gate button { background: none; color: var(--acc); border: 1px solid var(--acc); border-radius: 8px; padding: 8px 14px; cursor: pointer; font-weight: 600; }
+    .routine-root .modal-actions button.primary, .routine-root .gate button.primary { background: var(--acc); color: #1a1606; }
+    .routine-root .gate { position: fixed; inset: 0; background: #121212ee; display: none; align-items: center; justify-content: center; padding: 24px; z-index: 20; }
+    .routine-root .gate.show { display: flex; }
+    .routine-root .gate .box { width: min(420px, 100%); }
+    .routine-root .hidden { display: none !important; }
+    .routine-root .modal { position: fixed; inset: 0; background: #000a; display: none; align-items: center; justify-content: center; padding: 16px; z-index: 20; }
+    .routine-root .modal.show { display: flex; }
+    .routine-root .modal .box { width: min(720px, 100%); max-height: 90vh; overflow: auto; }
+    .routine-root .modal textarea { width: 100%; min-height: 420px; font-family: ui-monospace, monospace; font-size: 13px; }
   </style>
   <div class="layout">
-    <section class="card">
-      <div class="toolbar">
-        <button type="button" class="primary" id="saveBtn">Save</button>
-        <button type="button" id="pasteBtn">Edit as JSON</button>
-      </div>
-      <div class="status" id="status"></div>
+    <div class="bar">
       <div class="days" id="dayTabs"></div>
-      <p class="rest hidden" id="restHint">Rest day — add an exercise to train.</p>
-      <div id="exercises"></div>
-      <button type="button" id="addExBtn">Add exercise</button>
-    </section>
+      <button type="button" class="save" id="saveBtn">Save</button>
+    </div>
+    <div class="status" id="status"></div>
+    <p class="rest hidden" id="restHint">Rest day — add an exercise to train.</p>
+    <div id="exercises"></div>
+    <button type="button" class="add" id="addExBtn">+ Add exercise</button>
+    <div class="foot">
+      <button type="button" class="row" id="pasteBtn"><span class="chev">›</span>Edit as JSON</button>
+    </div>
   </div>
   <div class="gate" id="gate">
     <div class="box card">
@@ -163,21 +175,111 @@ export function renderRoutineEditor(options: {
       DAYS.forEach(function (d) {
         var btn = document.createElement("button");
         btn.type = "button";
-        btn.textContent = d + (dayOf(d).exercises.length ? " (" + dayOf(d).exercises.length + ")" : "");
+        var n = dayOf(d).exercises.length;
+        btn.appendChild(document.createTextNode(d));
+        var small = document.createElement("small");
+        small.textContent = n ? String(n) : "";
+        btn.appendChild(small);
+        btn.setAttribute("aria-label", d + (n ? ", " + n + " exercise" + (n === 1 ? "" : "s") : ", rest day"));
         if (d === activeDay) btn.className = "active";
         btn.addEventListener("click", function () { activeDay = d; renderDay(); renderTabs(); });
         root.appendChild(btn);
       });
     }
 
-    function field(label, el) {
+    var NATIVE_FIELD_SIZING = typeof CSS !== "undefined" && CSS.supports && CSS.supports("field-sizing", "content");
+    function autoGrow(el) {
+      if (NATIVE_FIELD_SIZING) return;
+      el.style.height = "auto";
+      el.style.height = (el.scrollHeight + 2) + "px";
+    }
+    function growAll() {
+      document.querySelectorAll(".routine-root .notes").forEach(autoGrow);
+    }
+    window.addEventListener("resize", growAll);
+
+    function move(list, from, to) {
+      if (to < 0 || to >= list.length || from === to) return;
+      var item = list.splice(from, 1)[0];
+      list.splice(to, 0, item);
+      renderDay();
+    }
+
+    function stepper(ex, key, label, step) {
       var wrap = document.createElement("div");
-      wrap.className = "field";
+      wrap.className = "num " + key;
       var lab = document.createElement("label");
       lab.textContent = label;
-      wrap.appendChild(lab);
-      wrap.appendChild(el);
+      var id = "f" + Math.random().toString(36).slice(2, 9);
+      lab.htmlFor = id;
+      var v = document.createElement("div");
+      v.className = "v";
+      var minus = document.createElement("button");
+      minus.type = "button"; minus.textContent = "−"; minus.setAttribute("aria-label", "Less " + label.toLowerCase());
+      var plus = document.createElement("button");
+      plus.type = "button"; plus.textContent = "+"; plus.setAttribute("aria-label", "More " + label.toLowerCase());
+      var inp = document.createElement("input");
+      inp.type = "number"; inp.min = "0"; inp.step = String(step); inp.inputMode = "numeric"; inp.id = id;
+      inp.value = String(ex[key]);
+      inp.addEventListener("input", function () { ex[key] = Math.max(0, Math.trunc(Number(inp.value || 0))); });
+      function bump(dir) {
+        var cur = Number(ex[key]) || 0;
+        var next = dir > 0 ? Math.floor(cur / step) * step + step : Math.ceil(cur / step) * step - step;
+        ex[key] = Math.max(0, next);
+        inp.value = String(ex[key]);
+      }
+      minus.addEventListener("click", function () { bump(-1); });
+      plus.addEventListener("click", function () { bump(1); });
+      v.appendChild(minus); v.appendChild(inp); v.appendChild(plus);
+      wrap.appendChild(lab); wrap.appendChild(v);
       return wrap;
+    }
+
+    function railBtn(label, text, cls, fn) {
+      var b = document.createElement("button");
+      b.type = "button";
+      b.textContent = text;
+      b.setAttribute("aria-label", label);
+      b.title = label;
+      if (cls) b.className = cls;
+      if (fn) b.addEventListener("click", fn);
+      return b;
+    }
+
+    function enableDrag(grip, card, list, idx) {
+      grip.addEventListener("pointerdown", function (e) {
+        e.preventDefault();
+        grip.setPointerCapture(e.pointerId);
+        card.classList.add("dragging");
+        var cards = Array.prototype.slice.call(document.querySelectorAll("#exercises .ex"));
+        var target = idx;
+        function over(y) {
+          cards.forEach(function (c) { c.classList.remove("drop-before", "drop-after"); });
+          target = idx;
+          for (var i = 0; i < cards.length; i++) {
+            var r = cards[i].getBoundingClientRect();
+            if (y >= r.top && y <= r.bottom) {
+              var before = y < r.top + r.height / 2;
+              if (i !== idx) cards[i].classList.add(before ? "drop-before" : "drop-after");
+              target = before ? i : i + 1;
+              if (target > idx) target -= 1;
+              break;
+            }
+          }
+        }
+        function onMove(ev) { over(ev.clientY); }
+        function onUp() {
+          grip.removeEventListener("pointermove", onMove);
+          grip.removeEventListener("pointerup", onUp);
+          grip.removeEventListener("pointercancel", onUp);
+          card.classList.remove("dragging");
+          cards.forEach(function (c) { c.classList.remove("drop-before", "drop-after"); });
+          if (target !== idx) move(list, idx, target);
+        }
+        grip.addEventListener("pointermove", onMove);
+        grip.addEventListener("pointerup", onUp);
+        grip.addEventListener("pointercancel", onUp);
+      });
     }
 
     function renderDay() {
@@ -188,74 +290,68 @@ export function renderRoutineEditor(options: {
       list.forEach(function (ex, idx) {
         var card = document.createElement("div");
         card.className = "ex";
+
+        var rail = document.createElement("div");
+        rail.className = "rail";
+        var grip = railBtn("Drag to reorder", "⋮⋮", "grip");
+        enableDrag(grip, card, list, idx);
+        var up = railBtn("Move up", "↑", "", function () { move(list, idx, idx - 1); });
+        var down = railBtn("Move down", "↓", "", function () { move(list, idx, idx + 1); });
+        up.disabled = idx === 0;
+        down.disabled = idx >= list.length - 1;
+        var del = railBtn("Remove exercise", "✕", "del", function () {
+          if (String(ex.title).trim() && !confirm("Remove " + ex.title + "?")) return;
+          list.splice(idx, 1); renderDay(); renderTabs();
+        });
+        rail.appendChild(grip); rail.appendChild(up); rail.appendChild(down); rail.appendChild(del);
+        card.appendChild(rail);
+
+        var body = document.createElement("div");
+        body.className = "ex-body";
         var head = document.createElement("div");
-        head.className = "ex-head";
+        head.className = "h";
         var title = document.createElement("input");
         title.type = "text";
+        title.className = "n";
         title.value = ex.title;
         title.placeholder = "Exercise name";
+        title.setAttribute("aria-label", "Exercise name");
         title.addEventListener("input", function () { ex.title = title.value; });
+        var pillWrap = document.createElement("span");
+        pillWrap.className = "pillwrap";
         var rating = document.createElement("select");
+        rating.setAttribute("aria-label", "Difficulty");
         ["easy","good","hard"].forEach(function (r) {
           var o = document.createElement("option");
           o.value = r; o.textContent = r;
           if (ex.easyGoodOrHard === r) o.selected = true;
           rating.appendChild(o);
         });
-        rating.addEventListener("change", function () { ex.easyGoodOrHard = rating.value; });
+        rating.className = "pill " + (ex.easyGoodOrHard || "good");
+        rating.addEventListener("change", function () { ex.easyGoodOrHard = rating.value; rating.className = "pill " + rating.value; });
+        pillWrap.appendChild(rating);
         head.appendChild(title);
-        head.appendChild(rating);
-        card.appendChild(head);
+        head.appendChild(pillWrap);
+        body.appendChild(head);
 
         var nums = document.createElement("div");
-        nums.className = "ex-nums";
-        function num(label, key) {
-          var inp = document.createElement("input");
-          inp.type = "number";
-          inp.min = "0";
-          inp.value = String(ex[key]);
-          inp.addEventListener("input", function () { ex[key] = Number(inp.value || 0); });
-          var wrap = field(label, inp);
-          wrap.classList.add(key);
-          nums.appendChild(wrap);
-        }
-        num("Weight", "weight");
-        num("Reps", "reps");
-        num("Sets", "sets");
-        card.appendChild(nums);
+        nums.className = "nums";
+        nums.appendChild(stepper(ex, "weight", "Weight", 5));
+        nums.appendChild(stepper(ex, "reps", "Reps", 1));
+        nums.appendChild(stepper(ex, "sets", "Sets", 1));
+        body.appendChild(nums);
 
-        var notesWrap = document.createElement("div");
-        notesWrap.className = "ex-notes";
         var notes = document.createElement("textarea");
+        notes.className = "notes";
         notes.placeholder = "Notes / cues";
+        notes.setAttribute("aria-label", "Notes");
         notes.value = ex.notes || "";
-        notes.addEventListener("input", function () { ex.notes = notes.value; });
-        notesWrap.appendChild(notes);
-        card.appendChild(notesWrap);
-
-        var actions = document.createElement("div");
-        actions.className = "ex-actions";
-        function act(label, fn, icon) {
-          var b = document.createElement("button");
-          b.type = "button";
-          if (icon) {
-            b.className = "trash";
-            b.setAttribute("aria-label", label);
-            b.title = label;
-            b.innerHTML = icon;
-          } else {
-            b.textContent = label;
-          }
-          b.addEventListener("click", fn);
-          actions.appendChild(b);
-        }
-        act("Up", function () { if (idx === 0) return; list.splice(idx, 1); list.splice(idx - 1, 0, ex); renderDay(); });
-        act("Down", function () { if (idx >= list.length - 1) return; list.splice(idx, 1); list.splice(idx + 1, 0, ex); renderDay(); });
-        act("Remove", function () { list.splice(idx, 1); renderDay(); renderTabs(); },
-          '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M9 3h6l1 2h5v2H3V5h5l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9z"/></svg>');
-        card.appendChild(actions);
+        notes.addEventListener("input", function () { ex.notes = notes.value; autoGrow(notes); });
+        body.appendChild(notes);
+        card.appendChild(body);
         root.appendChild(card);
       });
+      growAll();
     }
 
     function blankExercise() {
@@ -375,7 +471,7 @@ export function renderRoutineEditor(options: {
   <meta name="referrer" content="no-referrer" />
   <title>Gym Buddy routines</title>
 </head>
-<body style="margin:0;background:#121212;font-family:ui-sans-serif,system-ui,sans-serif">
+<body style="margin:0;background:#121212;font-family:ui-sans-serif,system-ui,Roboto,sans-serif;padding:10px 12px">
 ${revisionMark()}
 ${body}
 </body>

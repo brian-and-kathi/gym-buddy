@@ -1,3 +1,4 @@
+import { fixMojibake } from "./mojibake";
 import { asIso, ready, sql } from "./db";
 import { json, readJsonBody } from "./http";
 
@@ -194,7 +195,7 @@ function normalizeExercise(
     return { ok: false, error: "exercise must be an object" };
   }
   const raw = value as Record<string, unknown>;
-  const title = typeof raw.title === "string" ? raw.title.trim() : "";
+  const title = typeof raw.title === "string" ? fixMojibake(raw.title).trim() : "";
   if (!title) return { ok: false, error: "title is required" };
   const weight = asInt(raw.weight, 0);
   const reps = asInt(raw.reps, 10);
@@ -205,7 +206,8 @@ function normalizeExercise(
   if (weight < 0 || reps < 0 || sets < 0) {
     return { ok: false, error: `${title}: weight, reps, and sets cannot be negative` };
   }
-  const notes = typeof raw.notes === "string" ? raw.notes : "";
+  // Guard: repair UTF-8-read-as-Latin-1 text ("Â°") so it is never stored again.
+  const notes = typeof raw.notes === "string" ? fixMojibake(raw.notes) : "";
   const ratingRaw =
     typeof raw.easyGoodOrHard === "string"
       ? raw.easyGoodOrHard
