@@ -53,7 +53,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     .word .gym { color: #f9f72e; }
     .word .buddy { color: #00ff00; }
     .who { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.15; text-align: right; }
-    .who b { color: #00ffff; font-weight: 600; font-size: 16px; }
+    .who b { color: #ececec; font-weight: 600; font-size: 16px; }
     .who .rev-inline { font: 11px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; color: #6e6e76; letter-spacing: .03em; }
     .shell { display: flex; align-items: flex-start; min-height: calc(100vh - 59px); }
     .side { position: sticky; top: 59px; width: 240px; flex: none; align-self: stretch; display: flex; flex-direction: column; gap: 6px; padding: 16px 12px; background: #1a1a1a; border-right: 1px solid #333; }
@@ -116,6 +116,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
     details.agent summary::-webkit-details-marker { display: none; }
     details.agent summary::before { content: "›"; display: inline-block; width: 10px; font-size: 15px; transition: transform .15s; }
     details.agent[open] summary::before { transform: rotate(90deg); }
+    section[data-panel="routines"].active + details.agent { margin-top: 0; border-top: 0; }
     .agent-body { padding: 2px 2px 12px 20px; }
     .agent-field { display: flex; gap: 6px; }
     .agent input { flex: 1; min-width: 0; background: #141416; color: #9a9aa2; border: 1px solid #2c2c30; border-radius: 8px; padding: 9px; font: 12px ui-monospace, monospace; }

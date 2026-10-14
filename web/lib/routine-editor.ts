@@ -15,7 +15,7 @@ export function renderRoutineEditor(options: {
     .routine-root { --acc: #e9cf4f; --card: #1b1b1d; --line: #2c2c30; --text: #ececec; --mute: #9a9aa2; --dim: #6e6e76; --field: #141416; color: var(--text); }
     .routine-root * { box-sizing: border-box; }
     .routine-root a { color: #00ffff; }
-    .routine-root .layout { max-width: 720px; margin: 0 auto; padding: 0 0 24px; }
+    .routine-root .layout { max-width: 720px; margin: 0 auto; padding: 0; }
     .routine-root input, .routine-root select, .routine-root textarea, .routine-root button { font: inherit; }
     .routine-root .bar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
     .routine-root .days { display: flex; gap: 4px; flex: 1; min-width: 0; }
@@ -52,12 +52,12 @@ export function renderRoutineEditor(options: {
     .routine-root .nums { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 6px; }
     .routine-root .num { position: relative; background: var(--field); border: 1px solid var(--line); border-radius: 9px; height: 46px; text-align: center; }
     .routine-root .num label { position: absolute; top: 3px; left: 0; right: 0; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; opacity: .85; pointer-events: none; }
-    .routine-root .num .v { display: flex; align-items: center; justify-content: space-between; height: 100%; padding-top: 9px; }
+    .routine-root .num .v { gap: 0; display: flex; align-items: center; justify-content: space-between; height: 100%; padding-top: 9px; }
     .routine-root .num .v input { width: 100%; min-width: 0; flex: 1; background: none; border: 0; padding: 0; text-align: center; font-size: 19px; font-weight: 600; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
     .routine-root .num .v input::-webkit-outer-spin-button, .routine-root .num .v input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
     .routine-root .num .v input:focus { outline: none; }
     .routine-root .num:focus-within { border-color: #4a4a50; }
-    .routine-root .num .v button { flex: none; background: none; border: 0; color: var(--mute); width: 34px; height: 44px; margin-top: -9px; padding-top: 9px; font-size: 18px; cursor: pointer; }
+    .routine-root .num .v button { flex: none; background: none; border: 0; color: var(--mute); width: 28px; height: 44px; margin-top: -9px; padding-top: 9px; font-size: 18px; cursor: pointer; }
     .routine-root .num.weight label, .routine-root .num.weight input { color: #00FFFF; }
     .routine-root .num.reps label, .routine-root .num.reps input { color: #F1C40F; }
     .routine-root .num.sets label, .routine-root .num.sets input { color: #00FF00; }
@@ -219,9 +219,14 @@ export function renderRoutineEditor(options: {
       var plus = document.createElement("button");
       plus.type = "button"; plus.textContent = "+"; plus.setAttribute("aria-label", "More " + label.toLowerCase());
       var inp = document.createElement("input");
-      inp.type = "number"; inp.min = "0"; inp.step = String(step); inp.inputMode = "numeric"; inp.id = id;
+      inp.type = "text"; inp.inputMode = "numeric"; inp.pattern = "[0-9]*"; inp.autocomplete = "off"; inp.id = id;
       inp.value = String(ex[key]);
-      inp.addEventListener("input", function () { ex[key] = Math.max(0, Math.trunc(Number(inp.value || 0))); });
+      inp.addEventListener("input", function () {
+        var clean = inp.value.replace(/[^0-9]/g, "").slice(0, 4);
+        if (clean !== inp.value) inp.value = clean;
+        ex[key] = Number(clean || 0);
+      });
+      inp.addEventListener("blur", function () { inp.value = String(ex[key]); });
       function bump(dir) {
         var cur = Number(ex[key]) || 0;
         var next = dir > 0 ? Math.floor(cur / step) * step + step : Math.ceil(cur / step) * step - step;
