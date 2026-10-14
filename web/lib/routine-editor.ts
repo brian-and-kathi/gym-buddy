@@ -12,10 +12,10 @@ export function renderRoutineEditor(options: {
   const embedded = options.embedded === true;
   const body = `<div class="routine-root">
   <style>
-    .routine-root { --acc: #e9cf4f; --card: #1b1b1d; --line: #2c2c30; --text: #ececec; --mute: #9a9aa2; --dim: #6e6e76; --field: #141416; color: var(--text); }
+    .routine-root { width: 100%; --acc: #e9cf4f; --card: #1b1b1d; --line: #2c2c30; --text: #ececec; --mute: #9a9aa2; --dim: #6e6e76; --field: #141416; color: var(--text); }
     .routine-root * { box-sizing: border-box; }
     .routine-root a { color: #00ffff; }
-    .routine-root .layout { max-width: 720px; margin: 0 auto; padding: 0; }
+    .routine-root .layout { width: 100%; max-width: 720px; margin: 0 auto; padding: 0; }
     .routine-root input, .routine-root select, .routine-root textarea, .routine-root button { font: inherit; }
     .routine-root .bar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
     .routine-root .days { display: flex; gap: 4px; flex: 1; min-width: 0; }

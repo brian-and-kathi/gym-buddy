@@ -67,7 +67,7 @@ export function renderDashboard(index: IndexEntry[], options: DashboardOptions):
       .side { position: sticky; top: 56px; width: auto; flex-direction: row; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid #333; padding: 8px; z-index: 5; }
       .side > button { flex: 1; text-align: center; border-left: 0; border-bottom: 3px solid transparent; }
       .side > button.active { background: transparent; color: #ececec; font-weight: 600; border-bottom: 2px solid #e9cf4f; border-left-color: transparent; border-radius: 0; }
-      main { padding: 10px 12px 40px; }
+      main { width: 100%; align-self: stretch; padding: 10px 12px 40px; }
       .top { padding: 10px 14px; }
       .side { padding: 0; gap: 0; background: #121212; border-bottom: 1px solid #2c2c30; }
       .side > button { color: #9a9aa2; border-radius: 0; padding: 12px 0; border-bottom: 2px solid transparent; }
