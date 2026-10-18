@@ -29,7 +29,6 @@
     <string name="end_workout">End workout</string>
     <string name="end_workout_title">End workout?</string>
     <string name="end_workout_message">Sets you have not finished stay unfinished. The next screen is where you can push this session.</string>
-    <string name="end_workout_push_routine">Also push routine</string>
     <string name="summary_push_routine_failed">Gym time was pushed, but the routine was not</string>
     <string name="scan_profile">Scan profile QR</string>
     <string name="scan_profile_invalid">That QR is not a Gym Buddy profile</string>
@@ -55,7 +54,16 @@
     <string name="about_hide_manual">Hide manual entry</string>
     <string name="about_disconnect">Disconnect</string>
     <string name="about_share">Share profile</string>
+    <string name="about_share_title">Share</string>
+    <string name="about_share_body">This link lets anyone who receives it view your gym log, stats, and routine. Share it with an AI agent, or send it to yourself to open your profile on a computer.</string>
+    <string name="about_share_unavailable">The share link is still loading</string>
     <string name="about_tab_log">Log</string>
+    <string name="about_tab_stats">Stats</string>
+    <string name="about_tab_more">More</string>
+    <string name="about_check_updates">Check for updates</string>
+    <string name="about_checking">Checking…</string>
+    <string name="about_up_to_date">You\'re up to date</string>
+    <string name="about_check_failed">Couldn\'t check for updates</string>
     <string name="about_tab_totals">Totals</string>
     <string name="about_tab_averages">Averages</string>
     <string name="about_stats_loading">Loading gym stats…</string>

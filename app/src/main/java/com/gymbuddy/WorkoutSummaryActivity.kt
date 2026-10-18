@@ -128,12 +128,11 @@ class WorkoutSummaryActivity : AppCompatActivity(), DurationEditorDialogFragment
 
     private fun pushToWorker() {
         val summary = summaryData ?: return
-        val alsoRoutine = WorkoutPushClient.alsoPushRoutine(this)
         binding.pushButton.isEnabled = false
         binding.pushButton.setText(R.string.summary_pushing)
         thread {
             val result = WorkoutPushClient.push(this, summary)
-            val routineError = if (result.isSuccess && alsoRoutine) {
+            val routineError = if (result.isSuccess) {
                 pushRoutine().exceptionOrNull()?.message
             } else {
                 null

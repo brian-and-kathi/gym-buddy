@@ -23,6 +23,9 @@ interface RoutineDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(vararg days: RoutineDayEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertSync(day: RoutineDayEntity)
+
     @Query("DELETE FROM routine_days")
     suspend fun deleteAll()
 }

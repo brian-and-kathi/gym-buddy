@@ -6,6 +6,126 @@
     android:orientation="vertical"
     tools:context=".AboutFragment">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="8dp">
+
+        <ImageView
+            android:id="@+id/logoImage"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/plate" />
+
+        <TextView
+            android:id="@+id/appNameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="@string/app_name"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/aboutTabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_about_tab"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:id="@+id/tabLog"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tabLogLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingTop="10dp"
+                android:paddingBottom="8dp"
+                android:text="@string/about_tab_log"
+                android:textSize="16sp" />
+
+            <View
+                android:id="@+id/tabLogBar"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:background="#F9F72E" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tabStats"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tabStatsLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingTop="10dp"
+                android:paddingBottom="8dp"
+                android:text="@string/about_tab_stats"
+                android:textSize="16sp" />
+
+            <View
+                android:id="@+id/tabStatsBar"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:background="#F9F72E"
+                android:visibility="invisible" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tabMore"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?android:attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tabMoreLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingTop="10dp"
+                android:paddingBottom="8dp"
+                android:text="@string/about_tab_more"
+                android:textSize="16sp" />
+
+            <View
+                android:id="@+id/tabMoreBar"
+                android:layout_width="match_parent"
+                android:layout_height="3dp"
+                android:background="#F9F72E"
+                android:visibility="invisible" />
+        </LinearLayout>
+    </LinearLayout>
+
     <ScrollView
         android:id="@+id/aboutScroll"
         android:layout_width="match_parent"
@@ -16,93 +136,16 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
             android:orientation="vertical"
             android:padding="16dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-
-                <ImageView
-                    android:id="@+id/logoImage"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    android:contentDescription="@string/app_name"
-                    android:src="@drawable/plate" />
-
-                <TextView
-                    android:id="@+id/appNameText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:text="@string/app_name"
-                    android:textSize="26sp"
-                    android:textStyle="bold" />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:id="@+id/versionText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textColor="#888888"
-                        android:textSize="14sp"
-                        tools:text="Version 8.8.2" />
-
-                    <TextView
-                        android:id="@+id/updateLink"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="?android:attr/selectableItemBackground"
-                        android:paddingTop="4dp"
-                        android:paddingBottom="4dp"
-                        android:text="@string/update_install_link"
-                        android:textColor="#00FFFF"
-                        android:textSize="14sp"
-                        android:visibility="gone"
-                        tools:visibility="visible" />
-
-                    <TextView
-                        android:id="@+id/creditsText"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:textColor="#888888"
-                        android:textSize="14sp"
-                        tools:text="Made on Earth by Brian" />
-
-                    <TextView
-                        android:id="@+id/disconnectLink"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:background="?android:attr/selectableItemBackground"
-                        android:paddingTop="6dp"
-                        android:paddingBottom="6dp"
-                        android:text="@string/about_disconnect"
-                        android:textColor="#00FFFF"
-                        android:textSize="14sp"
-                        android:visibility="gone"
-                        tools:visibility="visible" />
-                </LinearLayout>
-            </LinearLayout>
 
             <TextView
                 android:id="@+id/profileStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
                 android:textColor="@color/onSurface"
                 android:textSize="16sp"
-                tools:text="Connected to Brian" />
+                tools:text="No cloud profile connected" />
 
             <TextView
                 android:id="@+id/setupBody"
@@ -149,7 +192,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:visibility="gone"
-                tools:visibility="visible">
+                tools:visibility="gone">
 
                 <EditText
                     android:id="@+id/workerUrlInput"
@@ -183,6 +226,140 @@
                     android:textColor="@color/onPrimary" />
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/creditsText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:textColor="#9E9E9E"
+                android:textSize="16sp"
+                tools:text="Made on Earth by Brian" />
+
+            <LinearLayout
+                android:id="@+id/connectionRow"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    android:id="@+id/connectedBadge"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_connected_badge"
+                    android:gravity="center_vertical"
+                    android:minHeight="48dp"
+                    android:paddingStart="16dp"
+                    android:paddingTop="10dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="10dp"
+                    android:textColor="#E7F6EA"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    tools:text="Connected to Brian" />
+
+                <TextView
+                    android:id="@+id/disconnectButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/bg_disconnect_chip"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:minHeight="48dp"
+                    android:paddingStart="16dp"
+                    android:paddingTop="10dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="10dp"
+                    android:text="@string/about_disconnect"
+                    android:textColor="#FFB4B4"
+                    android:textSize="15sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/shareCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_more_card"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/about_share_title"
+                    android:textColor="#F9F72E"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingExtra="2dp"
+                    android:text="@string/about_share_body"
+                    android:textColor="#DDDDDD"
+                    android:textSize="15sp" />
+
+                <Button
+                    android:id="@+id/shareButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:backgroundTint="@color/primary"
+                    android:text="@string/about_share_title"
+                    android:textAllCaps="false"
+                    android:textColor="@color/onPrimary" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/versionCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_more_card"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/versionText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/onSurface"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    tools:text="Version 9.2.0" />
+
+                <Button
+                    android:id="@+id/checkUpdatesButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:backgroundTint="#2A2A2A"
+                    android:text="@string/about_check_updates"
+                    android:textAllCaps="false"
+                    android:textColor="#00FFFF" />
+
+                <TextView
+                    android:id="@+id/updateStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/onSurfaceVariant"
+                    android:textSize="14sp"
+                    android:visibility="gone"
+                    tools:text="You're up to date"
+                    tools:visibility="visible" />
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 
@@ -190,7 +367,7 @@
         android:id="@+id/statsWeb"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="2"
+        android:layout_weight="1"
         android:visibility="gone" />
 
     <TextView

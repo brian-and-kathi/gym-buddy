@@ -19,7 +19,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -65,6 +65,9 @@ class AboutFragment : Fragment() {
     private var manualOpen = false
     private var loadedStatsUrl: String? = null
     private var nameRequest = 0
+    private var aboutTab = "log"
+    private var shareUrl: String? = null
+    private var updateReady = false
 
     private val http = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -101,10 +104,11 @@ class AboutFragment : Fragment() {
         val packageInfo = requireContext().packageManager.getPackageInfo(requireContext().packageName, 0)
         binding.versionText.text = "Version ${packageInfo.versionName}"
         binding.creditsText.text = coloredCredits(getString(R.string.about_credits))
-        binding.updateLink.setOnClickListener {
-            val offer = AppUpdate.offer(requireContext()) ?: return@setOnClickListener
-            AppUpdate.startInstall(requireActivity(), offer)
-        }
+        binding.checkUpdatesButton.setOnClickListener { checkForUpdates() }
+        binding.tabLog.setOnClickListener { selectTab("log") }
+        binding.tabStats.setOnClickListener { selectTab("stats") }
+        binding.tabMore.setOnClickListener { selectTab("more") }
+        binding.shareButton.setOnClickListener { shareProfile() }
 
         binding.statsWeb.setBackgroundColor(Color.parseColor("#121212"))
         binding.statsWeb.settings.javaScriptEnabled = true
@@ -119,7 +123,8 @@ class AboutFragment : Fragment() {
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 if (_binding == null || !WorkerRemote.isConfigured(requireContext())) return
-                binding.statsStatus.visibility = View.GONE
+                if (aboutTab != "more") binding.statsStatus.visibility = View.GONE
+                captureShareUrl()
             }
 
             override fun onReceivedError(
@@ -141,7 +146,7 @@ class AboutFragment : Fragment() {
                 PackageManager.PERMISSION_GRANTED
             if (granted) startProfileScan() else cameraPermission.launch(Manifest.permission.CAMERA)
         }
-        binding.disconnectLink.setOnClickListener { disconnectProfile() }
+        binding.disconnectButton.setOnClickListener { disconnectProfile() }
         binding.manualToggle.setOnClickListener {
             manualOpen = !manualOpen
             renderConnection()
@@ -167,8 +172,13 @@ class AboutFragment : Fragment() {
 
     fun renderUpdateOffer() {
         val binding = _binding ?: return
-        binding.updateLink.visibility =
-            if (AppUpdate.offer(requireContext()) == null) View.GONE else View.VISIBLE
+        val offer = AppUpdate.offer(requireContext())
+        updateReady = offer != null
+        if (offer != null) {
+            binding.updateStatus.visibility = View.VISIBLE
+            binding.updateStatus.text = getString(R.string.update_ready, offer.versionName)
+            binding.checkUpdatesButton.setText(R.string.update_install)
+        }
     }
 
     private fun saveProfile(url: String, token: String) {
@@ -178,6 +188,7 @@ class AboutFragment : Fragment() {
         val configured = WorkerRemote.isConfigured(requireContext())
         if (configured) manualOpen = false
         loadedStatsUrl = null
+        shareUrl = null
         renderConnection()
         Toast.makeText(
             requireContext(),
@@ -194,57 +205,144 @@ class AboutFragment : Fragment() {
         val context = requireContext()
         val url = WorkerRemote.getUrl(context)
         val connected = !url.isNullOrBlank()
-        val scrollParams = binding.aboutScroll.layoutParams as LinearLayout.LayoutParams
         val setupVisibility = if (connected) View.GONE else View.VISIBLE
+        binding.profileStatus.visibility = setupVisibility
         binding.setupBody.visibility = setupVisibility
         binding.openSiteButton.visibility = setupVisibility
         binding.scanProfileButton.visibility = setupVisibility
         binding.manualToggle.visibility = setupVisibility
         binding.manualFields.visibility = if (!connected && manualOpen) View.VISIBLE else View.GONE
         binding.manualToggle.setText(if (manualOpen) R.string.about_hide_manual else R.string.about_manual)
-        binding.disconnectLink.visibility = if (connected) View.VISIBLE else View.GONE
+        binding.aboutTabs.visibility = if (connected) View.VISIBLE else View.GONE
+        binding.connectionRow.visibility = if (connected) View.VISIBLE else View.GONE
+        binding.shareCard.visibility = if (connected) View.VISIBLE else View.GONE
         if (connected) {
             showConnected(WorkerRemote.profileSlug(context) ?: url!!)
-            binding.statsWeb.visibility = View.VISIBLE
-            binding.statsStatus.visibility = View.VISIBLE
-            binding.statsStatus.setText(R.string.about_stats_loading)
-            scrollParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
-            scrollParams.weight = 0f
+            if (arguments?.getBoolean(ARG_SHOW_LOG) == true) aboutTab = "log"
             loadDisplayName(url!!)
-            loadStats(url)
+            selectTab(aboutTab)
         } else {
-            binding.profileStatus.movementMethod = null
             binding.profileStatus.setText(R.string.about_not_connected)
             binding.statsWeb.visibility = View.GONE
             binding.statsStatus.visibility = View.GONE
-            scrollParams.height = 0
-            scrollParams.weight = 1f
+            binding.aboutScroll.visibility = View.VISIBLE
+            aboutTab = "log"
         }
-        binding.aboutScroll.layoutParams = scrollParams
+    }
+
+    private fun selectTab(tab: String) {
+        if (_binding == null) return
+        aboutTab = tab
+        styleTab(binding.tabLogLabel, binding.tabLogBar, tab == "log")
+        styleTab(binding.tabStatsLabel, binding.tabStatsBar, tab == "stats")
+        styleTab(binding.tabMoreLabel, binding.tabMoreBar, tab == "more")
+        val url = WorkerRemote.getUrl(requireContext())
+        val showWeb = !url.isNullOrBlank() && tab != "more"
+        binding.aboutScroll.visibility = if (showWeb) View.GONE else View.VISIBLE
+        binding.statsWeb.visibility = if (showWeb) View.VISIBLE else View.GONE
+        if (!showWeb) {
+            binding.statsStatus.visibility = View.GONE
+        }
+        if (showWeb) loadStats(url!!, tab)
+    }
+
+    private fun styleTab(label: TextView, bar: View, selected: Boolean) {
+        label.setTextColor(Color.parseColor(if (selected) "#F9F72E" else "#DDDDDD"))
+        bar.visibility = if (selected) View.VISIBLE else View.INVISIBLE
     }
 
     private fun showConnected(name: String) {
-        binding.profileStatus.movementMethod = null
-        binding.profileStatus.text = getString(R.string.about_connected, name)
+        val label = getString(R.string.about_connected, name)
+        val text = SpannableString("\u25CF  $label")
+        text.setSpan(ForegroundColorSpan(Color.parseColor("#4CBB17")), 0, 1, 0)
+        binding.connectedBadge.text = text
+    }
+
+    private fun shareProfile() {
+        val url = shareUrl
+        if (url.isNullOrBlank()) {
+            Toast.makeText(requireContext(), R.string.about_share_unavailable, Toast.LENGTH_SHORT).show()
+            if (WorkerRemote.isConfigured(requireContext())) {
+                loadStats(WorkerRemote.getUrl(requireContext())!!, "log")
+            }
+            return
+        }
+        val send = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, url)
+        }
+        startActivity(Intent.createChooser(send, getString(R.string.about_share)))
+    }
+
+    private fun captureShareUrl() {
+        val web = _binding?.statsWeb ?: return
+        web.evaluateJavascript(
+            "(function(){var el=document.getElementById('agentLink');return el?el.value:'';})()"
+        ) { raw ->
+            if (_binding == null || raw.isNullOrBlank() || raw == "null") return@evaluateJavascript
+            val value = try {
+                org.json.JSONArray("[$raw]").getString(0)
+            } catch (_: Exception) {
+                raw.trim().trim('"')
+            }
+            if (value.startsWith("https://")) shareUrl = value
+        }
+    }
+
+    private fun checkForUpdates() {
+        if (updateReady) {
+            val offer = AppUpdate.offer(requireContext())
+            if (offer != null) {
+                AppUpdate.startInstall(requireActivity(), offer)
+                return
+            }
+        }
+        binding.checkUpdatesButton.isEnabled = false
+        binding.updateStatus.visibility = View.VISIBLE
+        binding.updateStatus.setText(R.string.about_checking)
+        AppUpdate.checkNow(requireContext()) { result ->
+            if (_binding == null) return@checkNow
+            binding.checkUpdatesButton.isEnabled = true
+            when (result) {
+                is AppUpdate.Check.Update -> {
+                    updateReady = true
+                    binding.updateStatus.text = getString(R.string.update_ready, result.offer.versionName)
+                    binding.checkUpdatesButton.setText(R.string.update_install)
+                }
+                AppUpdate.Check.Current -> {
+                    updateReady = false
+                    binding.updateStatus.setText(R.string.about_up_to_date)
+                    binding.checkUpdatesButton.setText(R.string.about_check_updates)
+                }
+                AppUpdate.Check.Failed -> {
+                    binding.updateStatus.setText(R.string.about_check_failed)
+                    binding.checkUpdatesButton.setText(R.string.about_check_updates)
+                }
+            }
+        }
     }
 
     private fun disconnectProfile() {
         manualOpen = false
         WorkerRemote.save(requireContext(), "", "")
         loadedStatsUrl = null
+        shareUrl = null
         binding.statsWeb.loadUrl("about:blank")
         renderConnection()
         Toast.makeText(requireContext(), R.string.worker_cleared, Toast.LENGTH_SHORT).show()
     }
 
-    private fun loadStats(url: String) {
-        val showLog = arguments?.getBoolean(ARG_SHOW_LOG) == true
-        val target = if (showLog) "$url/?app=1&tab=log" else "$url/?app=1"
+    private fun loadStats(url: String, tab: String) {
+        val target = if (tab == "stats") "$url/?app=1&view=totals" else "$url/?app=1&view=log"
         if (loadedStatsUrl == target) return
         loadedStatsUrl = target
-        if (showLog) binding.statsWeb.settings.cacheMode = WebSettings.LOAD_NO_CACHE
-        binding.statsStatus.visibility = View.VISIBLE
-        binding.statsStatus.setText(R.string.about_stats_loading)
+        if (arguments?.getBoolean(ARG_SHOW_LOG) == true) {
+            binding.statsWeb.settings.cacheMode = WebSettings.LOAD_NO_CACHE
+        }
+        if (binding.statsWeb.visibility == View.VISIBLE) {
+            binding.statsStatus.visibility = View.VISIBLE
+            binding.statsStatus.setText(R.string.about_stats_loading)
+        }
         val token = WorkerRemote.getToken(requireContext())
         val slug = WorkerRemote.profileSlug(requireContext())
         val origin = Uri.parse(url).let { parsed ->

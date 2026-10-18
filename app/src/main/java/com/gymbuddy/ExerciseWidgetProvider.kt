@@ -81,6 +81,23 @@ class ExerciseWidgetProvider : AppWidgetProvider() {
             io.execute { bindAll(context) }
         }
 
+        /** Keeps each widget on the same exercise after one exercise moves earlier in the list. */
+        fun remapSavedIndexes(context: Context, fromIndex: Int, toIndex: Int) {
+            val manager = AppWidgetManager.getInstance(context)
+            val ids = manager.getAppWidgetIds(ComponentName(context, ExerciseWidgetProvider::class.java))
+            ids.forEach { id ->
+                val current = ExerciseWidgetState.getIndex(context, id)
+                if (current >= 0) {
+                    ExerciseWidgetState.setIndex(
+                        context,
+                        id,
+                        ExerciseOrder.remapIndex(current, fromIndex, toIndex)
+                    )
+                }
+            }
+            ExerciseWidgetPulse.remapIndex(fromIndex, toIndex)
+        }
+
         internal fun bindAll(context: Context) {
             val manager = AppWidgetManager.getInstance(context)
             val ids = manager.getAppWidgetIds(ComponentName(context, ExerciseWidgetProvider::class.java))
@@ -194,11 +211,24 @@ class ExerciseWidgetProvider : AppWidgetProvider() {
             val updated = applyPieTap(current)
             val exercises = workout.exercises.toMutableList()
             exercises[position] = updated
+            val began = current.completedSets == 0 && updated.completedSets > 0
+            val movedTo = if (began) {
+                ExerciseOrder.placeBegunExercise(exercises, position, completedBefore = 0)
+            } else {
+                null
+            }
             WorkoutRepository.saveTodayExercises(context, exercises)
+            if (movedTo != null) {
+                WorkoutRepository.saveRoutineExercises(context, workout.dayOfWeek, exercises)
+            }
 
+            val focus = movedTo ?: position
             val manager = AppWidgetManager.getInstance(context)
             manager.getAppWidgetIds(ComponentName(context, ExerciseWidgetProvider::class.java)).forEach { id ->
-                ExerciseWidgetState.setIndex(context, id, position)
+                ExerciseWidgetState.setIndex(context, id, focus)
+            }
+            if (movedTo != null && ExerciseWidgetPulse.isTracking(position)) {
+                ExerciseWidgetPulse.remapIndex(position, movedTo)
             }
 
             if (updated.completedSets > current.completedSets && updated.completedSets < updated.sets) {
@@ -573,6 +603,11 @@ object ExerciseWidgetPulse {
     fun clear() {
         exerciseIndex = -1
         startTime = 0L
+    }
+
+    fun remapIndex(fromIndex: Int, toIndex: Int) {
+        if (exerciseIndex < 0) return
+        exerciseIndex = ExerciseOrder.remapIndex(exerciseIndex, fromIndex, toIndex)
     }
 
     fun isTracking(index: Int): Boolean = exerciseIndex == index && startTime > 0L

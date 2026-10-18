@@ -19,6 +19,7 @@ import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.*
@@ -36,6 +37,11 @@ class WorkoutFragment : Fragment() {
     private var currentSwelledPosition = -1
     private var loadToken = 0
     private var seenGeneration = -1
+    private var pageCallbackRegistered = false
+    /** Index of an exercise whose first set was just logged, until that begin is committed. */
+    private var pendingBeginIndex: Int? = null
+    /** While true, card updates must not write a single routine slot. The order write is in flight. */
+    private var suppressRoutinePersist = false
     private val reloadFromWidget = Runnable {
         if (isAdded && _binding != null) {
             loadWorkout(preservePage = true)
@@ -127,30 +133,14 @@ class WorkoutFragment : Fragment() {
             openEndSummary()
             return
         }
-        val builder = AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext())
             .setTitle(R.string.end_workout_title)
             .setMessage(R.string.end_workout_message)
             .setNegativeButton(android.R.string.cancel, null)
-        val pushRoutine = if (WorkerRemote.isConfigured(requireContext())) {
-            android.widget.CheckBox(requireContext()).apply {
-                text = getString(R.string.end_workout_push_routine)
-                isChecked = WorkoutPushClient.alsoPushRoutine(requireContext())
-                val pad = (24 * resources.displayMetrics.density).toInt()
-                setPadding(pad, pad / 3, pad, 0)
+            .setPositiveButton(R.string.end_workout) { _, _ ->
+                openEndSummary()
             }
-        } else {
-            null
-        }
-        if (pushRoutine != null) {
-            builder.setView(pushRoutine)
-        }
-        builder.setPositiveButton(R.string.end_workout) { _, _ ->
-            if (pushRoutine != null) {
-                WorkoutPushClient.setAlsoPushRoutine(requireContext(), pushRoutine.isChecked)
-            }
-            openEndSummary()
-        }
-        builder.show()
+            .show()
     }
 
     private fun openEndSummary() {
@@ -218,80 +208,6 @@ class WorkoutFragment : Fragment() {
 
                 if (token != loadToken || _binding == null) return@launch
 
-                val adapter = ExercisePagerAdapter(this@WorkoutFragment, exercises, { position ->
-                    saveWorkoutLog()
-                    ExerciseWidgetProvider.refreshAll(requireContext())
-                 }, { position, updatedExercise, oldCompleted, newCompleted ->
-                     // Update by index so renames (and any field edits) always stick
-                     if (position in exercises.indices) {
-                         exercises[position] = updatedExercise
-                         if (position in smallPies.indices) {
-                             smallPies[position].setProgress(updatedExercise.completedSets, updatedExercise.sets)
-                         }
-                     }
-                     // Persist to today's workout log
-                     saveWorkoutLog()
-                     // Also update the routine template for this day (including makeup target day)
-                     persistExerciseToRoutine(position, updatedExercise)
-                     if (oldCompleted != newCompleted || !updatedExercise.isTimerActive) {
-                         ExerciseWidgetProvider.refreshAll(requireContext())
-                     }
-                     if (oldCompleted != newCompleted) {
-                         val event = if (newCompleted > oldCompleted) {
-                             WorkoutClock.Event.SET_COMPLETE
-                         } else {
-                             WorkoutClock.Event.SET_UNDONE
-                         }
-                         WorkoutClock.presentIfNeeded(requireActivity(), exercises, event)
-                     }
-                     refreshEndWorkoutLink()
-                 })
-
-                binding.viewPager.adapter = adapter
-                binding.viewPager.setPageTransformer(PageFlipPageTransformer())
-
-                // Set up highlighting for current page
-                binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
-                    override fun onPageSelected(position: Int) {
-                        updateCircleHighlights(position)
-                    }
-                })
-
-                // ── Create overlapping small progress circles ──
-                binding.circlesContainer.removeAllViews()
-                smallPies.clear()
-
-                if (exercises.isNotEmpty()) {
-                    val density = resources.displayMetrics.density
-                    val circleSizePx = (CIRCLE_SIZE_DP * density).toInt()
-                    val negativeMarginPx = (-OVERLAP_DP * density).toInt()
-
-                    exercises.forEachIndexed { index, exercise ->
-                        val pie = ProgressPieChart(requireContext()).apply {
-                            val params = LinearLayout.LayoutParams(
-                                circleSizePx,
-                                circleSizePx
-                            ).apply {
-                                gravity = Gravity.CENTER_VERTICAL
-
-                                // Negative margin creates the overlap (except first circle)
-                                if (index > 0) {
-                                    marginStart = negativeMarginPx
-                                }
-                            }
-                            layoutParams = params
-
-                            setProgress(exercise.completedSets, exercise.sets)
-                            setSegmented(true)
-
-                            // Later pies appear on top during overlap
-                            elevation = index * 2f   // or translationZ = index * 4f for older APIs
-                        }
-                        smallPies.add(pie)
-                        binding.circlesContainer.addView(pie)
-                    }
-                }
-
                 val firstIncompleteIndex = exercises.indexOfFirst { it.completedSets < it.sets }
                 val targetPage = when {
                     requestedPage in exercises.indices -> requestedPage
@@ -299,9 +215,7 @@ class WorkoutFragment : Fragment() {
                     firstIncompleteIndex != -1 -> firstIncompleteIndex
                     else -> 0
                 }
-                if (exercises.isNotEmpty()) {
-                    binding.viewPager.setCurrentItem(targetPage, false)
-                }
+                presentExercises(targetPage)
 
                 WorkoutClock.presentIfNeeded(requireActivity(), exercises, WorkoutClock.Event.LOAD)
                 refreshEndWorkoutLink()
@@ -316,8 +230,153 @@ class WorkoutFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        pageCallbackRegistered = false
         saveWorkoutLog()
         _binding = null
+    }
+
+    private fun onSetCompleted(@Suppress("UNUSED_PARAMETER") position: Int) {
+        saveWorkoutLog()
+        if (isAdded) {
+            ExerciseWidgetProvider.refreshAll(requireContext())
+        }
+    }
+
+    private fun onExerciseUpdated(
+        position: Int,
+        updatedExercise: Exercise,
+        oldCompleted: Int,
+        newCompleted: Int
+    ) {
+        // A card created before a reorder still reports its old index. The exercise
+        // object already lives at its new index, so ignore that stale write.
+        val liveIndex = exercises.indexOfFirst { it === updatedExercise }
+        if (liveIndex >= 0 && liveIndex != position) return
+
+        if (position in exercises.indices) {
+            exercises[position] = updatedExercise
+            if (position in smallPies.indices) {
+                smallPies[position].setProgress(updatedExercise.completedSets, updatedExercise.sets)
+            }
+        }
+        val beginning = oldCompleted == 0 && newCompleted > 0 && position in exercises.indices
+        if (beginning && pendingBeginIndex == null) {
+            pendingBeginIndex = position
+            saveWorkoutLog()
+            // Let this tap finish the cooldown timer on the current card, then move it.
+            val host = view
+            if (host != null) {
+                host.post { commitBegunExercise() }
+            } else {
+                commitBegunExercise()
+            }
+        } else if (suppressRoutinePersist || pendingBeginIndex == position) {
+            saveWorkoutLog()
+        } else {
+            saveWorkoutLog()
+            persistExerciseToRoutine(position, updatedExercise)
+        }
+        if (oldCompleted != newCompleted || !updatedExercise.isTimerActive) {
+            if (isAdded) {
+                ExerciseWidgetProvider.refreshAll(requireContext())
+            }
+        }
+        if (oldCompleted != newCompleted && isAdded) {
+            val event = if (newCompleted > oldCompleted) {
+                WorkoutClock.Event.SET_COMPLETE
+            } else {
+                WorkoutClock.Event.SET_UNDONE
+            }
+            WorkoutClock.presentIfNeeded(requireActivity(), exercises, event)
+        }
+        refreshEndWorkoutLink()
+    }
+
+    private fun commitBegunExercise() {
+        val from = pendingBeginIndex ?: return
+        if (!isAdded || _binding == null || from !in exercises.indices) {
+            pendingBeginIndex = null
+            return
+        }
+        val movedTo = ExerciseOrder.placeBegunExercise(exercises, from, completedBefore = 0)
+        pendingBeginIndex = null
+        if (movedTo == null) {
+            persistExerciseToRoutine(from, exercises[from])
+            return
+        }
+        // Drop an in-flight reload so it cannot paint the old order after this save.
+        loadToken++
+        suppressRoutinePersist = true
+        try {
+            val snapshot = exercises.toList()
+            val day = makeupDayOfWeek ?: Calendar.getInstance().get(Calendar.DAY_OF_WEEK)
+            val appContext = requireContext().applicationContext
+            runBlocking(Dispatchers.IO) {
+                WorkoutRepository.saveTodayExercises(appContext, snapshot)
+                WorkoutRepository.saveRoutineExercises(appContext, day, snapshot)
+            }
+            if (!isAdded || _binding == null) return
+            ExerciseWidgetProvider.remapSavedIndexes(requireContext(), from, movedTo)
+            presentExercises(movedTo)
+            ExerciseWidgetProvider.refreshAll(appContext)
+        } finally {
+            suppressRoutinePersist = false
+        }
+    }
+
+    private fun presentExercises(targetPage: Int) {
+        if (_binding == null) return
+        binding.viewPager.adapter = ExercisePagerAdapter(
+            this,
+            exercises,
+            this::onSetCompleted,
+            this::onExerciseUpdated
+        )
+        binding.viewPager.setPageTransformer(PageFlipPageTransformer())
+        if (!pageCallbackRegistered) {
+            pageCallbackRegistered = true
+            binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+                override fun onPageSelected(position: Int) {
+                    updateCircleHighlights(position)
+                }
+            })
+        }
+
+        binding.circlesContainer.removeAllViews()
+        smallPies.clear()
+        currentSwelledPosition = -1
+
+        if (exercises.isNotEmpty()) {
+            val density = resources.displayMetrics.density
+            val circleSizePx = (CIRCLE_SIZE_DP * density).toInt()
+            val negativeMarginPx = (-OVERLAP_DP * density).toInt()
+
+            exercises.forEachIndexed { index, exercise ->
+                val pie = ProgressPieChart(requireContext()).apply {
+                    val params = LinearLayout.LayoutParams(
+                        circleSizePx,
+                        circleSizePx
+                    ).apply {
+                        gravity = Gravity.CENTER_VERTICAL
+                        if (index > 0) {
+                            marginStart = negativeMarginPx
+                        }
+                    }
+                    layoutParams = params
+                    setProgress(exercise.completedSets, exercise.sets)
+                    setSegmented(true)
+                    elevation = index * 2f
+                }
+                smallPies.add(pie)
+                binding.circlesContainer.addView(pie)
+            }
+        }
+
+        if (exercises.isNotEmpty()) {
+            val page = targetPage.coerceIn(exercises.indices)
+            binding.viewPager.setCurrentItem(page, false)
+            updateCircleHighlights(binding.viewPager.currentItem)
+        }
     }
 
     private fun saveWorkoutLog() {

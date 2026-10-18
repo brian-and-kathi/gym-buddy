@@ -9,21 +9,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.concurrent.TimeUnit
 
 object WorkoutPushClient {
-    private const val PREFS = "gym_buddy_prefs"
-    private const val KEY_ALSO_PUSH_ROUTINE = "push_routine_with_workout"
     private val gson = Gson()
-
-    fun alsoPushRoutine(context: Context): Boolean {
-        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .getBoolean(KEY_ALSO_PUSH_ROUTINE, false)
-    }
-
-    fun setAlsoPushRoutine(context: Context, enabled: Boolean) {
-        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-            .edit()
-            .putBoolean(KEY_ALSO_PUSH_ROUTINE, enabled)
-            .apply()
-    }
 
     private val jsonType = "application/json; charset=utf-8".toMediaType()
     private val http = OkHttpClient.Builder()

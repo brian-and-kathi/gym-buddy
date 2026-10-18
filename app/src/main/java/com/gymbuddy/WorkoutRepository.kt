@@ -148,4 +148,23 @@ object WorkoutRepository {
             WorkoutLogEntity(dateStr, plannedJson, loggedJson)
         )
     }
+
+    /**
+     * Replaces the routine template for [dayOfWeek] with [exercises] in this order.
+     * Session progress stays out of the template. [dayOfWeek] is the makeup weekday
+     * while a makeup session is active.
+     */
+    fun saveRoutineExercises(context: Context, dayOfWeek: Int, exercises: List<Exercise>) {
+        val dao = AppDatabase.getDatabase(context).routineDao()
+        val routine = dao.getByDayOfWeekSync(dayOfWeek) ?: return
+        val template = exercises.map { exercise ->
+            exercise.copy(
+                completedSets = 0,
+                isTimerActive = false,
+                remainingSeconds = 0,
+                timerEndTime = 0
+            )
+        }
+        dao.insertSync(routine.copy(exercises = template))
+    }
 }

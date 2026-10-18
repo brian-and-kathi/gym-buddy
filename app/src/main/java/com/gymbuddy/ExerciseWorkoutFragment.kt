@@ -568,6 +568,8 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
     }
 
     override fun onDestroyView() {
+        cancelTimerCallbacks()
+        isTimerRunning = false
         super.onDestroyView()
         _binding = null
     }

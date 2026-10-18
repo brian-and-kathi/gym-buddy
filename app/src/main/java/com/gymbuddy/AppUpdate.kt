@@ -16,6 +16,11 @@ import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 object AppUpdate {
+    sealed class Check {
+        class Update(val offer: ReleaseVersion.Offer) : Check()
+        object Current : Check()
+        object Failed : Check()
+    }
     private const val PREFS = "app_update"
     private const val KEY_CHECKED_AT = "checked_at"
     private const val KEY_VERSION = "version_name"
@@ -85,6 +90,20 @@ object AppUpdate {
         }
     }
 
+    fun checkNow(context: Context, onResult: (Check) -> Unit) {
+        val app = context.applicationContext
+        thread {
+            val result = try {
+                if (!fetchAndStore(app)) Check.Failed
+                else offer(app)?.let { Check.Update(it) } ?: Check.Current
+            } catch (_: Exception) {
+                Check.Failed
+            }
+            val activity = context as? Activity
+            if (activity != null) activity.runOnUiThread { onResult(result) } else onResult(result)
+        }
+    }
+
     fun shouldPrompt(context: Context, offer: ReleaseVersion.Offer): Boolean {
         if (promptedVersion == offer.versionName) return false
         return prefs(context).getString(KEY_DISMISSED, null) != offer.versionName
@@ -135,7 +154,7 @@ object AppUpdate {
         return System.currentTimeMillis() - checkedAt >= DAY_MS
     }
 
-    private fun fetchAndStore(context: Context) {
+    private fun fetchAndStore(context: Context): Boolean {
         val request = Request.Builder()
             .url(RELEASES_URL)
             .header("Accept", "application/vnd.github+json")
@@ -152,6 +171,7 @@ object AppUpdate {
                 }
             }
             editor.apply()
+            return response.isSuccessful
         }
     }
 
