@@ -152,7 +152,10 @@ object ProgressPieRenderer {
         total: Int,
         drawDividers: Boolean
     ) {
-        val outer = radius - outlineStroke
+        // A little under the previous 6% / 28px spokes. The same width is the
+        // gray band between the segments and the light outer ring.
+        val borderWidth = (radius * 0.045f).coerceIn(8f, 20f)
+        val outer = radius - outlineStroke / 2f - borderWidth
         val inner = radius * HOLE_RADIUS_FRACTION
         if (outer <= inner) {
             return
@@ -187,7 +190,7 @@ object ProgressPieRenderer {
             val dividerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 color = segmentTodo
                 style = Paint.Style.STROKE
-                strokeWidth = (radius * 0.02f).coerceIn(2.5f, 5f)
+                strokeWidth = borderWidth
                 strokeCap = Paint.Cap.BUTT
             }
             for (i in 0 until total) {
@@ -203,6 +206,13 @@ object ProgressPieRenderer {
                 )
             }
         }
+        val perimeterPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = segmentTodo
+            style = Paint.Style.STROKE
+            strokeWidth = borderWidth
+            strokeCap = Paint.Cap.BUTT
+        }
+        canvas.drawCircle(centerX, centerY, outer + borderWidth / 2f, perimeterPaint)
         val holePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             color = segmentTodo
             style = Paint.Style.FILL

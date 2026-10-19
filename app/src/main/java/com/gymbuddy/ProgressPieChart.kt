@@ -11,6 +11,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.content.res.ResourcesCompat
+import kotlin.math.min
 
 class ProgressPieChart @JvmOverloads constructor(
     context: Context,
@@ -23,6 +25,13 @@ class ProgressPieChart @JvmOverloads constructor(
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val checkPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val centerTextPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#FF6B6B")
+        textAlign = Paint.Align.CENTER
+        typeface = ResourcesCompat.getFont(context, R.font.seven_segment)
+    }
+    private var centerCountdown: String? = null
+    private var centerCountdownVisible = true
     private var completed = 0
     private var total = 1
     private var isSegmented = false
@@ -46,6 +55,18 @@ class ProgressPieChart @JvmOverloads constructor(
     fun setProgress(completedSets: Int, totalSets: Int) {
         completed = completedSets
         total = totalSets.coerceAtLeast(1)
+        invalidate()
+    }
+
+    /** Rest countdown drawn in the donut hole. Null clears it. A finished pie keeps its check. */
+    fun setCenterCountdown(text: String?) {
+        centerCountdown = text
+        centerCountdownVisible = true
+        invalidate()
+    }
+
+    fun setCenterCountdownVisible(visible: Boolean) {
+        centerCountdownVisible = visible
         invalidate()
     }
 
@@ -207,5 +228,28 @@ class ProgressPieChart @JvmOverloads constructor(
             outlineStroke = paint.strokeWidth,
             segmentDividers = showSegmentDividers
         )
+        val label = centerCountdown
+        if (!label.isNullOrEmpty() && centerCountdownVisible && completed < total) {
+            drawCenterCountdown(canvas, label)
+        }
+    }
+
+    private fun drawCenterCountdown(canvas: Canvas, text: String) {
+        val centerX = width / 2f
+        val centerY = height / 2f
+        val radius = min(centerX, centerY) - paint.strokeWidth / 2f
+        val holeRadius = radius * 0.36f
+        if (holeRadius <= 0f) {
+            return
+        }
+        centerTextPaint.textSize = holeRadius * 0.95f
+        val maxWidth = holeRadius * 1.7f
+        val measured = centerTextPaint.measureText(text)
+        if (measured > maxWidth && measured > 0f) {
+            centerTextPaint.textSize = centerTextPaint.textSize * maxWidth / measured
+        }
+        val fontMetrics = centerTextPaint.fontMetrics
+        val baseline = centerY - (fontMetrics.ascent + fontMetrics.descent) / 2f
+        canvas.drawText(text, centerX, baseline, centerTextPaint)
     }
 }

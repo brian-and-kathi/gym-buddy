@@ -13,6 +13,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.graphics.Typeface
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -76,7 +77,7 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         super.onViewCreated(view, savedInstanceState)
 
         updateUI()
-        updateStarUI()
+        syncDifficultySlider()
 
         // Resume timer if it was running
         if (exercise.isTimerActive && exercise.timerEndTime > System.currentTimeMillis() && !isTimerRunning) {
@@ -131,25 +132,17 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
             searchExerciseOnline(exercise.title)
         }
 
-        // Set up star rating click listeners
-        binding.starEasy.setOnClickListener {
-            exercise.rating = "easy"
-            updateStarUI()
-            showRatingBubble("easy")
-            onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
-        }
-
-        binding.starGood.setOnClickListener {
-            exercise.rating = "good"
-            updateStarUI()
-            showRatingBubble("good")
-            onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
-        }
-
-        binding.starHard.setOnClickListener {
-            exercise.rating = "hard"
-            updateStarUI()
-            showRatingBubble("hard")
+        binding.difficultySlider.addOnChangeListener { _, value, fromUser ->
+            if (!fromUser) {
+                return@addOnChangeListener
+            }
+            val rating = sliderToRating(value)
+            if (exercise.rating == rating) {
+                return@addOnChangeListener
+            }
+            exercise.rating = rating
+            updateDifficultyLabels()
+            showRatingBubble(rating)
             onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
         }
 
@@ -194,8 +187,7 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
 
     override fun onResume() {
         super.onResume()
-        // Ensure star UI is updated when swiping between exercises
-        updateStarUI()
+        syncDifficultySlider()
     }
 
     private fun startTimer(initialSeconds: Int = 59) {
@@ -266,7 +258,8 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         flashRunnable = Runnable {
             try {
                 if (_binding != null) {
-                    binding.cooldownValue.visibility = if (binding.cooldownValue.visibility == View.VISIBLE) View.INVISIBLE else View.VISIBLE
+                    val showing = flashCount % 2 == 0
+                    binding.progressPieChart.setCenterCountdownVisible(showing)
                 }
                 flashCount++
                 if (flashCount < 6) { // 3 flashes (6 toggles)
@@ -275,6 +268,7 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
                     exercise.isTimerActive = false
                     exercise.remainingSeconds = 0
                     isTimerRunning = false
+                    flashRunnable = null
                     if (_binding != null) updateUI()
                     onUpdate(position, exercise, exercise.completedSets, exercise.completedSets)
                 }
@@ -282,6 +276,9 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
                 // Flashing failed, stop it
                 stopTimer()
             }
+        }
+        if (_binding != null) {
+            binding.progressPieChart.setCenterCountdown(":00")
         }
         handler.post(flashRunnable!!)
     }
@@ -311,15 +308,8 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
 
         // Hide all other UI elements
         binding.titleContainer.visibility = View.GONE
-        binding.weightLabel.visibility = View.GONE
-        binding.weightValue.visibility = View.GONE
-        binding.repsLabel.visibility = View.GONE
-        binding.repsValue.visibility = View.GONE
-        binding.setsLabel.visibility = View.GONE
-        binding.setsValue.visibility = View.GONE
-        binding.starRatingContainer.visibility = View.GONE
-        binding.cooldownLabel.visibility = View.GONE
-        binding.cooldownValue.visibility = View.GONE
+        binding.statsRow.visibility = View.GONE
+        binding.difficultyBlock.visibility = View.GONE
         binding.notesText.visibility = View.GONE
         binding.progressPieChart.visibility = View.GONE
 
@@ -333,52 +323,44 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
 
         // Show all other UI elements
         binding.titleContainer.visibility = View.VISIBLE
-        binding.weightLabel.visibility = View.VISIBLE
-        binding.weightValue.visibility = View.VISIBLE
-        binding.repsLabel.visibility = View.VISIBLE
-        binding.repsValue.visibility = View.VISIBLE
-        binding.setsLabel.visibility = View.VISIBLE
-        binding.setsValue.visibility = View.VISIBLE
-        binding.starRatingContainer.visibility = View.VISIBLE
+        binding.statsRow.visibility = View.VISIBLE
+        binding.difficultyBlock.visibility = View.VISIBLE
         binding.notesText.visibility = View.VISIBLE
         binding.progressPieChart.visibility = View.VISIBLE
 
-        // Cooldown visibility is managed by updateUI
-        updateStarUI()
+        syncDifficultySlider()
         updateUI()
     }
 
-    private fun updateStarUI() {
+    private fun sliderToRating(value: Float): String = when (value.toInt()) {
+        0 -> "easy"
+        2 -> "hard"
+        else -> "good"
+    }
+
+    private fun ratingToSlider(rating: String): Float = when (rating) {
+        "easy" -> 0f
+        "hard" -> 2f
+        else -> 1f
+    }
+
+    private fun syncDifficultySlider() {
         if (_binding == null) return
+        val target = ratingToSlider(exercise.rating)
+        if (binding.difficultySlider.value != target) {
+            binding.difficultySlider.value = target
+        }
+        updateDifficultyLabels()
+    }
 
-        // Reset all stars to outline (☆) with golden color
-        binding.starEasy.text = "\u2606"
-        binding.starEasy.setTextColor(0xFFFFD700.toInt()) // Golden
-        binding.starGood.text = "\u2606"
-        binding.starGood.setTextColor(0xFFFFD700.toInt()) // Golden
-        binding.starHard.text = "\u2606"
-        binding.starHard.setTextColor(0xFFFFD700.toInt()) // Golden
-
-        // Fill stars based on rating (★) with yellow color
-        when (exercise.rating) {
-            "easy" -> {
-                binding.starEasy.text = "\u2605"
-                binding.starEasy.setTextColor(0xFFFFFF00.toInt()) // Yellow
-            }
-            "good" -> {
-                binding.starEasy.text = "\u2605"
-                binding.starEasy.setTextColor(0xFFFFFF00.toInt()) // Yellow
-                binding.starGood.text = "\u2605"
-                binding.starGood.setTextColor(0xFFFFFF00.toInt()) // Yellow
-            }
-            "hard" -> {
-                binding.starEasy.text = "\u2605"
-                binding.starEasy.setTextColor(0xFFFFFF00.toInt()) // Yellow
-                binding.starGood.text = "\u2605"
-                binding.starGood.setTextColor(0xFFFFFF00.toInt()) // Yellow
-                binding.starHard.text = "\u2605"
-                binding.starHard.setTextColor(0xFFFFFF00.toInt()) // Yellow
-            }
+    private fun updateDifficultyLabels() {
+        if (_binding == null) return
+        val selected = ratingToSlider(exercise.rating).toInt()
+        val labels = listOf(binding.labelEasy, binding.labelGood, binding.labelHard)
+        labels.forEachIndexed { index, label ->
+            val active = index == selected
+            label.setTextColor(if (active) 0xFFFFFFFF.toInt() else 0xFF9E9E9E.toInt())
+            label.setTypeface(null, if (active) Typeface.BOLD else Typeface.NORMAL)
         }
     }
 
@@ -505,13 +487,10 @@ class ExerciseWorkoutFragment : Fragment(), SetsEditorDialogFragment.SetsEditorL
         binding.setsValue.text = exercise.sets.toString()
 
         if (exercise.isTimerActive && isTimerRunning && exercise.remainingSeconds > 0) {
-            binding.cooldownLabel.visibility = View.VISIBLE
-            binding.cooldownValue.visibility = View.VISIBLE
-            binding.cooldownLabel.text = "Cooldown"
-            binding.cooldownValue.text = ":${exercise.remainingSeconds.toString().padStart(2, '0')}"
-        } else {
-            binding.cooldownLabel.visibility = View.GONE
-            binding.cooldownValue.visibility = View.GONE
+            val seconds = exercise.remainingSeconds.toString().padStart(2, '0')
+            binding.progressPieChart.setCenterCountdown(":$seconds")
+        } else if (flashRunnable == null) {
+            binding.progressPieChart.setCenterCountdown(null)
         }
 
         binding.notesText.text = if (exercise.notes.isNotBlank()) "Notes: ${exercise.notes}" else ""

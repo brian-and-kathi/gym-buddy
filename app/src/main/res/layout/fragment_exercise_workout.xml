@@ -12,13 +12,6 @@
         android:clipChildren="true"
         android:clipToOutline="true">
 
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/verticalGuideline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.38" />
-
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/titleContainer"
             android:layout_width="0dp"
@@ -62,209 +55,198 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
-        <TextView
-            android:id="@+id/weightLabel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#FFFF00"
-            android:layout_marginTop="16dp"
-            android:gravity="left"
-            app:layout_constraintEnd_toStartOf="@+id/verticalGuideline"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/titleContainer"
-            tools:text="Weight:" />
-
-        <TextView
-            android:id="@+id/weightValue"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="48sp"
-            android:textStyle="bold"
-            android:textColor="#FFFF00"
-            android:gravity="center"
-            app:layout_constraintEnd_toStartOf="@+id/verticalGuideline"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/weightLabel"
-            tools:text="45" />
-
-        <TextView
-            android:id="@+id/repsLabel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#00FFFF"
-            android:layout_marginTop="16dp"
-            android:gravity="left"
-            app:layout_constraintEnd_toStartOf="@+id/verticalGuideline"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/weightValue"
-            tools:text="Reps:" />
-
-        <TextView
-            android:id="@+id/repsValue"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="48sp"
-            android:textStyle="bold"
-            android:textColor="#00FFFF"
-            android:gravity="center"
-            app:layout_constraintEnd_toStartOf="@+id/verticalGuideline"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/repsLabel"
-            tools:text="8" />
-
-        <TextView
-            android:id="@+id/setsLabel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#00FF00"
-            android:layout_marginTop="16dp"
-            android:gravity="left"
-            app:layout_constraintEnd_toStartOf="@+id/verticalGuideline"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/repsValue"
-            tools:text="Sets:" />
-
-        <TextView
-            android:id="@+id/setsValue"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="48sp"
-            android:textStyle="bold"
-            android:textColor="#00FF00"
-            android:gravity="center"
-            app:layout_constraintEnd_toStartOf="@+id/verticalGuideline"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/setsLabel"
-            tools:text="4" />
-
-        <TextView
-            android:id="@+id/cooldownLabel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="#FF6B6B"
-            android:layout_marginTop="16dp"
-            android:gravity="left"
-            android:visibility="gone"
-            app:layout_constraintEnd_toStartOf="@+id/verticalGuideline"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/setsValue"
-            tools:text="Cooldown:" />
-
-        <TextView
-            android:id="@+id/cooldownValue"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textSize="48sp"
-            android:textStyle="bold"
-            android:textColor="#FF6B6B"
-            android:fontFamily="@font/seven_segment"
-            android:gravity="center"
-            android:visibility="gone"
-            app:layout_constraintEnd_toStartOf="@+id/verticalGuideline"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cooldownLabel"
-            tools:text=":59" />
-
         <LinearLayout
-            android:id="@+id/rightColumn"
+            android:id="@+id/statsRow"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:gravity="center_horizontal"
-            android:orientation="vertical"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="8dp"
+            android:baselineAligned="false"
+            android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="@+id/verticalGuideline"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/titleContainer">
 
-            <TextView
-                android:id="@+id/difficultyLabel"
-                android:layout_width="match_parent"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                android:text="Difficulty"
-                android:textAlignment="center"
-                android:textColor="#ffffff"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/weightLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textColor="#FFFF00"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    tools:text="Weight" />
+
+                <TextView
+                    android:id="@+id/weightValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:textColor="#FFFF00"
+                    android:textSize="40sp"
+                    android:textStyle="bold"
+                    tools:text="45" />
+            </LinearLayout>
 
             <LinearLayout
-                android:id="@+id/starRatingContainer"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="8dp"
-                android:gravity="center"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/repsLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textColor="#00FFFF"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    tools:text="Reps" />
+
+                <TextView
+                    android:id="@+id/repsValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:textColor="#00FFFF"
+                    android:textSize="40sp"
+                    android:textStyle="bold"
+                    tools:text="8" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/setsLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:textColor="#00FF00"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    tools:text="Sets" />
+
+                <TextView
+                    android:id="@+id/setsValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:textColor="#00FF00"
+                    android:textSize="40sp"
+                    android:textStyle="bold"
+                    tools:text="4" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <com.gymbuddy.ProgressPieChart
+            android:id="@+id/progressPieChart"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/difficultyBlock"
+            app:layout_constraintDimensionRatio="1:1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/statsRow" />
+
+        <LinearLayout
+            android:id="@+id/difficultyBlock"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toTopOf="@+id/notesText"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <com.google.android.material.slider.Slider
+                android:id="@+id/difficultySlider"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:contentDescription="Difficulty"
+                android:stepSize="1.0"
+                android:value="1.0"
+                android:valueFrom="0.0"
+                android:valueTo="2.0"
+                app:haloRadius="20dp"
+                app:thumbRadius="12dp"
+                app:trackHeight="6dp" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal">
 
                 <TextView
-                    android:id="@+id/starEasy"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:text=" "
-                    android:textSize="32sp" />
+                    android:id="@+id/labelEasy"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="start"
+                    android:text="Easy"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp" />
 
                 <TextView
-                    android:id="@+id/starGood"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
+                    android:id="@+id/labelGood"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:gravity="center"
-                    android:text=" "
-                    android:textSize="32sp" />
+                    android:text="Good"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp" />
 
                 <TextView
-                    android:id="@+id/starHard"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="?android:attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:gravity="center"
-                    android:text=" "
-                    android:textSize="32sp" />
-
+                    android:id="@+id/labelHard"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="end"
+                    android:text="Hard"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp" />
             </LinearLayout>
-
-            <com.gymbuddy.ProgressPieChart
-                android:id="@+id/progressPieChart"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_marginTop="8dp"
-                android:layout_weight="1" />
-
-            <TextView
-                android:id="@+id/notesText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:gravity="center_horizontal"
-                android:textAlignment="center"
-                android:textSize="18sp"
-                tools:text="Notes: Keep elbows in" />
-
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/notesText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:gravity="center_horizontal"
+            android:textAlignment="center"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="Notes: Keep elbows in" />
 
         <TextView
             android:id="@+id/fullScreenNotesText"
