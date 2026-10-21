@@ -366,6 +366,11 @@ class WorkoutFragment : Fragment() {
                     setProgress(exercise.completedSets, exercise.sets)
                     setSegmented(true)
                     elevation = index * 2f
+                    setOnClickListener {
+                        if (_binding != null && index in exercises.indices) {
+                            binding.viewPager.setCurrentItem(index, true)
+                        }
+                    }
                 }
                 smallPies.add(pie)
                 binding.circlesContainer.addView(pie)
